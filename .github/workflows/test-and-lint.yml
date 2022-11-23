@@ -1,0 +1,34 @@
+name: Testing and Linter
+
+on:
+  push:
+    branches:
+      - release-**
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  build:
+    name: "Test and Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rust Setup
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          target: wasm32-unknown-unknown
+          override: true
+          components: rustfmt, clippy
+
+      - uses: actions/checkout@v3
+
+      - name: Rustfmt
+        run: cargo fmt --all -- --check
+      - name: Clippy
+        run: cargo clippy --all --features runtime-benchmarks
+
+      - name: Run tests
+        run: cargo test --locked --verbose --all
+      - name: Ensure benchmarking compiles
+        run: cargo check --release --features=runtime-benchmarks
