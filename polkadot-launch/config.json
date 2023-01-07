@@ -1,42 +1,39 @@
 {
-  "relaychain": {
-    "bin": "../bin/polkadot",
-    "chain": "rococo-local",
-    "nodes": [
-      {
-        "name": "alice",
-        "wsPort": 9944,
-        "port": 30444
-      },
-      {
-        "name": "bob",
-        "wsPort": 9955,
-        "port": 30555
-      }
-    ]
-  },
-  "parachains": [
-    {
-      "bin": "../target/release/parachain-template-node",
-      "id": "2000",
-      "balance": "1000000000000000000000",
-      "nodes": [
-        {
-          "wsPort": 9988,
-          "rpcPort": 8833,
-          "port": 31200,
-          "name": "alice",
-          "flags": [
-            "--unsafe-rpc-external",
-            "--rpc-methods=unsafe",
-            "--unsafe-ws-external",
-            "--rpc-cors=all",
-            "--",
-            "--execution=wasm"
-          ]
-        }
-      ]
-    }
-  ],
-  "types": {}
+	"relaychain": {
+		"bin": "../../polkadot/target/release/polkadot",
+		"chain": "rococo-local",
+		"nodes": [
+			{
+				"name": "alice",
+				"wsPort": 9944,
+				"port": 30444
+			},
+			{
+				"name": "bob",
+				"wsPort": 9955,
+				"port": 30555
+			}
+		]
+	},
+	"parachains": [
+		{
+			"bin": "../target/release/polkadot-parachain",
+			"id": "200",
+			"balance": "1000000000000000000000",
+			"nodes": [
+				{
+					"wsPort": 9988,
+					"name": "alice",
+					"port": 31200,
+					"flags": [
+						"--force-authoring",
+						"--",
+						"--execution=wasm"
+					]
+				}
+			]
+		}
+	],
+	"types": {
+	}
 }

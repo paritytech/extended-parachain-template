@@ -1,12 +1,11 @@
-# Extended Parachain Template
+# Substrate Cumulus Parachain Template
 
-This parachain template comes pre-made with several different pallets.
+A new [Cumulus](https://github.com/paritytech/cumulus/)-based Substrate node, ready for hacking ☁️..
 
-The pallet documentation can be found here: https://www.notion.so/paritytechnologies/Parachain-s-Menu-14e5ee6d9c2a45c9a75f2cfb19510994
-
-## Cumulus
-
-This project was originally forked from the Substrate Parachain Template.
+This project is originally a fork of the
+[Substrate Node Template](https://github.com/substrate-developer-hub/substrate-node-template)
+modified to include dependencies required for registering this node as a **parathread** or
+**parachain** to a **relay chain**.
 
 The stand-alone version of this template is hosted on the
 [Substrate Devhub Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template/)
@@ -17,6 +16,7 @@ at each release branch using the
 
 👉 Learn more about parachains [here](https://wiki.polkadot.network/docs/learn-parachains), and
 parathreads [here](https://wiki.polkadot.network/docs/learn-parathreads).
+
 
 🧙 Learn about how to use this template and run your own parachain testnet for it in the
 [Devhub Cumulus Tutorial](https://docs.substrate.io/tutorials/v3/cumulus/start-relay/).
