@@ -471,6 +471,7 @@ parameter_types! {
 	pub const CouncilMaxProposals: u32 = 10;
 	pub const CouncilMaxMembers: u32 = 25;
 }
+
 type Council = pallet_collective::Instance1;
 impl pallet_collective::Config<Council> for Runtime {
 	type RuntimeOrigin = RuntimeOrigin;
@@ -483,13 +484,13 @@ impl pallet_collective::Config<Council> for Runtime {
 	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
 
-// impl pallet_motion::Config for Runtime {
-//     type RuntimeEvent = RuntimeEvent;
-//     type RuntimeCall = RuntimeCall;
-//     type SimpleMajorityOrigin = ();
-//     type SuperMajorityOrigin = ();
-//     type UnanimousOrigin = ();
-// }
+impl pallet_motion::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+    type SimpleMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, Council, 1, 2>;
+    type SuperMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, Council, 3, 4>;
+    type UnanimousOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, Council, 1, 1>;
+}
 
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
@@ -546,16 +547,17 @@ construct_runtime!(
 		ParachainInfo: parachain_info::{Pallet, Storage, Config} = 3,
 
 		// Utility
-		Utility: pallet_utility::{Pallet, Call, Event } = 4,
-
+		Utility: pallet_utility::{Pallet, Call, Event} = 4,
+		
 		// Monetary stuff.
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 11,
 		Assets: pallet_assets::{Pallet, Call, Storage, Config<T>, Event<T>} = 12,
-
+		
 		// Governance
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 15,
 		Collective: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} =16,
+		Motion: pallet_motion::{Pallet, Call, Event<T>},
 
 
 		// Collator support. The order of these 4 are important and shall not change.
