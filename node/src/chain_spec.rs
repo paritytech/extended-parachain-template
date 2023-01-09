@@ -101,6 +101,7 @@ pub fn development_config() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
+				Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
 				1000.into(),
 			)
 		},
@@ -156,7 +157,8 @@ pub fn local_testnet_config() -> ChainSpec {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
-				1000.into(),
+				Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+				2000.into(),
 			)
 		},
 		// Bootnodes
@@ -172,7 +174,7 @@ pub fn local_testnet_config() -> ChainSpec {
 		// Extensions
 		Extensions {
 			relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-			para_id: 1000,
+			para_id: 2000,
 		},
 	)
 }
@@ -180,8 +182,11 @@ pub fn local_testnet_config() -> ChainSpec {
 fn testnet_genesis(
 	invulnerables: Vec<(AccountId, AuraId)>,
 	endowed_accounts: Vec<AccountId>,
+	root_key: Option<AccountId>,
 	id: ParaId,
 ) -> parachain_template_runtime::GenesisConfig {
+	let alice = get_from_seed::<sr25519::Public>("Alice");
+	let bob = get_from_seed::<sr25519::Public>("Bob");
 	parachain_template_runtime::GenesisConfig {
 		system: parachain_template_runtime::SystemConfig {
 			code: parachain_template_runtime::WASM_BINARY
@@ -190,6 +195,20 @@ fn testnet_genesis(
 		},
 		balances: parachain_template_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+		},
+		// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
+		assets: parachain_template_runtime::AssetsConfig {
+			assets: vec![
+				(1, alice.into(), true, 10_000_000_0000),
+				(2, bob.into(), true, 10_000_000_0000),
+			],
+			// Genesis metadata: Vec<(id, name, symbol, decimals)>
+			metadata: vec![
+				(1, "asset-1".into(), "ALT1".into(), 10),
+				(2, "asset-2".into(), "ALT2".into(), 10),
+			],
+			// Genesis accounts: Vec<(id, account_id, balance)>
+			accounts: vec![(1, alice.into(), 50_000_000_0000), (2, bob.into(), 50_000_000_0000)],
 		},
 		parachain_info: parachain_template_runtime::ParachainInfoConfig { parachain_id: id },
 		collator_selection: parachain_template_runtime::CollatorSelectionConfig {
@@ -213,6 +232,15 @@ fn testnet_genesis(
 		// of this.
 		aura: Default::default(),
 		aura_ext: Default::default(),
+		sudo: parachain_template_runtime::SudoConfig { key: root_key },
+		collective: parachain_template_runtime::CollectiveConfig {
+			phantom: std::marker::PhantomData,
+			members: endowed_accounts
+				.iter()
+				.enumerate()
+				.filter_map(|(idx, acc)| if idx % 2 == 0 { Some(acc.clone()) } else { None })
+				.collect::<Vec<_>>(),
+		},
 		parachain_system: Default::default(),
 		polkadot_xcm: parachain_template_runtime::PolkadotXcmConfig {
 			safe_xcm_version: Some(SAFE_XCM_VERSION),
