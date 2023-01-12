@@ -22,7 +22,6 @@ scale-info = { version = "2.2.0", default-features = false, features = ["derive"
 smallvec = "1.10.0"
 
 # Local
-pallet-template = { path = "../pallets/template", default-features = false }
 pallet-motion = { path = "../pallets/motion", default-features = false }
 
 # Substrate
@@ -106,7 +105,6 @@ std = [
 	"pallet-motion/std",
 	"pallet-session/std",
 	"pallet-sudo/std",
-	"pallet-template/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -142,7 +140,6 @@ runtime-benchmarks = [
 	"pallet-collator-selection/runtime-benchmarks",
 	"pallet-collective/runtime-benchmarks",
 	"pallet-motion/runtime-benchmarks",
-	"pallet-template/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
 	"pallet-xcm/runtime-benchmarks",
@@ -170,7 +167,6 @@ try-runtime = [
 	"pallet-motion/try-runtime",
 	"pallet-session/try-runtime",
 	"pallet-sudo/try-runtime",
-	"pallet-template/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-utility/try-runtime",
