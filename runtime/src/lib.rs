@@ -31,16 +31,16 @@ use frame_support::{
 	construct_runtime,
 	dispatch::DispatchClass,
 	parameter_types,
-	traits::Everything,
+	traits::{Everything, AsEnsureOriginWithArg, ConstU32},
 	weights::{
-		constants::WEIGHT_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
+		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
 		WeightToFeeCoefficients, WeightToFeePolynomial,
 	},
 	PalletId,
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot,
+	EnsureRoot, EnsureSigned
 };
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
@@ -217,9 +217,10 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// We allow for 0.5 of a second of compute with a 12 second average block time.
-const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND
-	.saturating_div(2)
-	.set_proof_size(cumulus_primitives_core::relay_chain::v2::MAX_POV_SIZE as u64);
+const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
+	WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
+	cumulus_primitives_core::relay_chain::v2::MAX_POV_SIZE as u64,
+);
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -362,10 +363,13 @@ parameter_types! {
 }
 
 impl pallet_assets::Config for Runtime {
+	
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
 	type AssetId = u32;
+	type AssetIdParameter = codec::Compact<u32>;
 	type Currency = Balances;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
 	type ForceOrigin = EnsureRoot<AccountId>;
 	type AssetDeposit = AssetDeposit;
 	type AssetAccountDeposit = AssetAccountDeposit;
@@ -375,6 +379,7 @@ impl pallet_assets::Config for Runtime {
 	type StringLimit = StringLimit;
 	type Freezer = ();
 	type Extra = ();
+	type RemoveItemsLimit = ConstU32<1000>;
 	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
 }
 

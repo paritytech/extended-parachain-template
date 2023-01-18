@@ -63,6 +63,7 @@ pub mod pallet {
 			let dispatch_info = call.get_dispatch_info();
 			(dispatch_info.weight, dispatch_info.class)
 		})]
+		#[pallet::call_index(1)]
 		pub fn simple_majority(
 			origin: OriginFor<T>,
 			call: Box<<T as Config>::RuntimeCall>,
@@ -87,6 +88,7 @@ pub mod pallet {
 			let dispatch_info = call.get_dispatch_info();
 			(dispatch_info.weight, dispatch_info.class)
 		})]
+		#[pallet::call_index(2)]
 		pub fn super_majority(
 			origin: OriginFor<T>,
 			call: Box<<T as Config>::RuntimeCall>,
@@ -111,6 +113,7 @@ pub mod pallet {
 			let dispatch_info = call.get_dispatch_info();
 			(dispatch_info.weight, dispatch_info.class)
 		})]
+		#[pallet::call_index(3)]
 		pub fn unanimous(
 			origin: OriginFor<T>,
 			call: Box<<T as Config>::RuntimeCall>,
