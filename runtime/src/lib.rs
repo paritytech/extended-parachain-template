@@ -475,8 +475,8 @@ parameter_types! {
 	pub const CouncilMaxMembers: u32 = 25;
 }
 
-type Council = pallet_collective::Instance1;
-impl pallet_collective::Config<Council> for Runtime {
+type CouncilInstance = pallet_collective::Instance1;
+impl pallet_collective::Config<CouncilInstance> for Runtime {
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeEvent = RuntimeEvent;
 	type Proposal = RuntimeCall;
@@ -490,9 +490,9 @@ impl pallet_collective::Config<Council> for Runtime {
 impl pallet_motion::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
-    type SimpleMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, Council, 1, 2>;
-    type SuperMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, Council, 3, 4>;
-    type UnanimousOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, Council, 1, 1>;
+    type SimpleMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 1, 2>;
+    type SuperMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 3, 4>;
+    type UnanimousOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 1, 1>;
 }
 
 impl pallet_aura::Config for Runtime {
@@ -555,7 +555,7 @@ construct_runtime!(
 		
 		// Governance
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 15,
-		Collective: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
+		CouncilCollective: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
 		
 		
 		// Collator support. The order of these 4 are important and shall not change.

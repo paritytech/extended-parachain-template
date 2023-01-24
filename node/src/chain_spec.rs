@@ -233,7 +233,7 @@ fn testnet_genesis(
 		aura: Default::default(),
 		aura_ext: Default::default(),
 		sudo: parachain_template_runtime::SudoConfig { key: root_key },
-		collective: parachain_template_runtime::CollectiveConfig {
+		council_collective: parachain_template_runtime::CouncilCollectiveConfig {
 			phantom: std::marker::PhantomData,
 			members: endowed_accounts
 				.iter()
