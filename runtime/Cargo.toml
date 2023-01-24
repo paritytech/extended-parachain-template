@@ -57,6 +57,7 @@ sp-version = { git = "https://github.com/paritytech/substrate", default-features
 
 # Polkadot
 pallet-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.30" }
+polkadot-primitives = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.30" }
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.30" }
 polkadot-runtime-common = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.30" }
 xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.30" }
@@ -75,6 +76,16 @@ cumulus-primitives-timestamp = { git = "https://github.com/paritytech/cumulus.gi
 cumulus-primitives-utility = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.30", default-features = false }
 pallet-collator-selection = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.30", default-features = false }
 parachain-info = { git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.30", default-features = false }
+# parachains-common = { git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.30", default-features = false }
+
+
+# Frontier 
+fp-rpc = { git = "https://github.com/paritytech/frontier", default-features = false, branch = "polkadot-v0.9.30" }
+fp-self-contained = { git = "https://github.com/paritytech/frontier", default-features = false, branch = "polkadot-v0.9.30" }
+pallet-evm = { git = "https://github.com/paritytech/frontier", default-features = false, branch = "polkadot-v0.9.30" }
+pallet-ethereum = { git = "https://github.com/paritytech/frontier", default-features = false, branch = "polkadot-v0.9.30" }
+pallet-base-fee = { git = "https://github.com/paritytech/frontier", default-features = false, branch = "polkadot-v0.9.30" }
+
 
 [features]
 default = [
@@ -127,6 +138,13 @@ std = [
 	"xcm-builder/std",
 	"xcm-executor/std",
 	"xcm/std",
+	# Frontier
+	"fp-rpc/std",
+	"fp-self-contained/std",
+	# Frontier FRAME
+	"pallet-base-fee/std",
+	"pallet-evm/std",
+	"pallet-ethereum/std",
 ]
 
 runtime-benchmarks = [
@@ -147,6 +165,8 @@ runtime-benchmarks = [
 	"xcm-builder/runtime-benchmarks",
 	"cumulus-pallet-session-benchmarking/runtime-benchmarks",
 	"cumulus-pallet-xcmp-queue/runtime-benchmarks",
+	"pallet-ethereum/runtime-benchmarks",
+	"pallet-evm/runtime-benchmarks",
 ]
 
 try-runtime = [

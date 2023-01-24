@@ -14,10 +14,13 @@ pub mod xcm_config;
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use smallvec::smallvec;
 use sp_api::impl_runtime_apis;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_core::{
+	crypto::{ByteArray, KeyTypeId},
+	OpaqueMetadata, H160, H256, U256,
+};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify},
+	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify, UniqueSaturatedInto},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
@@ -27,23 +30,28 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
+use frame_support::traits::{
+	tokens::currency::Currency, ConstU32, Everything, FindAuthor, OnUnbalanced, Imbalance,
+};
 use frame_support::{
 	construct_runtime,
 	dispatch::DispatchClass,
 	parameter_types,
-	traits::Everything,
 	weights::{
 		constants::WEIGHT_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
 		WeightToFeeCoefficients, WeightToFeePolynomial,
 	},
-	PalletId,
+	ConsensusEngineId, PalletId,
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	EnsureRoot,
 };
+use pallet_balances::NegativeImbalance;
+use pallet_evm::{EnsureAddressTruncated, HashedAddressMapping, OnChargeEVMTransaction};
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
+use sp_std::marker::PhantomData;
 use xcm_config::{XcmConfig, XcmOriginToTransactDispatchOrigin};
 
 #[cfg(any(feature = "std", test))]
@@ -57,7 +65,6 @@ use weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight};
 // XCM Imports
 use xcm::latest::prelude::BodyId;
 use xcm_executor::XcmExecutor;
-
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
@@ -217,8 +224,7 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// We allow for 0.5 of a second of compute with a 12 second average block time.
-const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND
-	.saturating_div(2);
+const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_div(2);
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -305,7 +311,7 @@ impl frame_system::Config for Runtime {
 	type SS58Prefix = SS58Prefix;
 	/// The action to take on a Runtime Upgrade
 	type OnSetCode = cumulus_pallet_parachain_system::ParachainSetCode<Self>;
-	type MaxConsumers = frame_support::traits::ConstU32<16>;
+	type MaxConsumers = ConstU32<16>;
 }
 
 parameter_types! {
@@ -469,8 +475,8 @@ parameter_types! {
 	pub const CouncilMaxMembers: u32 = 25;
 }
 
-type Council = pallet_collective::Instance1;
-impl pallet_collective::Config<Council> for Runtime {
+type CouncilInstance = pallet_collective::Instance1;
+impl pallet_collective::Config<CouncilInstance> for Runtime {
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeEvent = RuntimeEvent;
 	type Proposal = RuntimeCall;
@@ -482,11 +488,14 @@ impl pallet_collective::Config<Council> for Runtime {
 }
 
 impl pallet_motion::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type RuntimeCall = RuntimeCall;
-    type SimpleMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, Council, 1, 2>;
-    type SuperMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, Council, 3, 4>;
-    type UnanimousOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, Council, 1, 1>;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type SimpleMajorityOrigin =
+		pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 1, 2>;
+	type SuperMajorityOrigin =
+		pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 3, 4>;
+	type UnanimousOrigin =
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 1, 1>;
 }
 
 impl pallet_aura::Config for Runtime {
@@ -523,6 +532,105 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
+/***  Frontier stuff ***/
+/* Pallet-EVM [] */
+/* Pallet-Ethereum [] */
+/* Pallet-Base-Fee [] */
+pub struct FindAuthorTruncated<F>(PhantomData<F>);
+impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
+	fn find_author<'a, I>(digests: I) -> Option<H160>
+	where
+		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+	{
+		if let Some(author_index) = F::find_author(digests) {
+			let authority_id = Aura::authorities()[author_index as usize].clone();
+			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]));
+		}
+		None
+	}
+}
+
+/// Handles transaction fees from the EVM  
+pub struct EVMDealWithFees<R>(PhantomData<R>);
+pub type AccountIdOf<R> = <R as frame_system::Config>::AccountId;
+
+impl<R> OnUnbalanced<NegativeImbalance<R>> for EVMDealWithFees<R>
+where
+	R: pallet_balances::Config + pallet_collator_selection::Config + core::fmt::Debug,
+	AccountIdOf<R>:
+		From<polkadot_primitives::v2::AccountId> + Into<polkadot_primitives::v2::AccountId>,
+	<R as frame_system::Config>::RuntimeEvent: From<pallet_balances::Event<R>>,
+{
+	// this is called from pallet_evm for Ethereum-based transactions
+	// (technically, it calls on_unbalanced, which calls this when non-zero)
+	fn on_nonzero_unbalanced(amount: NegativeImbalance<R>) {
+		// deposit the fee into the collator_selection reward pot
+		let staking_pot = <pallet_collator_selection::Pallet<R>>::account_id();
+		<pallet_balances::Pallet<R>>::resolve_creating(&staking_pot, amount);
+	}
+}
+
+// Frontier's default OnChargeEVMTransaction burns apart of the fees
+pub struct EVMTransactionChargeHandler<OU>(PhantomData<OU>);
+
+type AccountIdOf<R> = <R as frame_system::Config>::AccountId;
+type BalanceOf<R> = <<R as pallet_evm::Config>::Currency as Currency<AccountIdOf<R>>>::Balance;
+
+type PositiveImbalanceOf<R> = <<R as pallet_evm::Config>::Currency as Currency<AccountIdOf<R>>>::PositiveImbalance;
+type NegativeImbalanceOf<R> = <<R as pallet_evm::Config>::Currency as Currency<AccountIdOf<R>>>::NegativeImbalance;
+
+impl<R, OU> OnChargeEVMTransaction for EVMTransactionChargeHandler<OU> where R: pallet_evm::Config,
+	PositiveImbalanceOf<R>: Imbalance<BalanceOf<R>, Opposite = NegativeImbalanceOf<R>>,
+	NegativeImbalanceOf<R>: Imbalance<BalanceOf<R>, Opposite = PositiveImbalanceOf<R>>,
+	OU: OnUnbalanced<NegativeImbalanceOf<R>>,
+	U256: UniqueSaturatedInto<BalanceOf<R>>
+{
+    type LiquidityInfo = Option<NegativeImbalanceOf<R>;
+
+    fn withdraw_fee(who: &H160, fee: sp_core::U256) -> Result<Self::LiquidityInfo, pallet_evm::Error<T>> {
+        todo!()
+    }
+
+    fn correct_and_deposit_fee(
+		who: &H160,
+		corrected_fee: sp_core::U256,
+		base_fee: sp_core::U256,
+		already_withdrawn: Self::LiquidityInfo,
+	) -> Self::LiquidityInfo {
+        todo!()
+    }
+
+    fn pay_priority_fee(tip: Self::LiquidityInfo) {
+        todo!()
+    }
+}
+
+parameter_types! {
+	pub const ChainId: u64 = 688;
+	// pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
+	// pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+	// pub WeightPerGas: u64 = WEIGHT_PER_GAS;//Weight::from_ref_time(WEIGHT_PER_GAS);
+}
+
+impl pallet_evm::Config for Runtime {
+	type FeeCalculator = (); //BaseFee;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type WeightPerGas = WeightPerGas;
+	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
+	type CallOrigin = EnsureAddressRoot<AccountId>;
+	type WithdrawOrigin = EnsureAddressTruncated;
+	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
+	type Currency = Balances;
+	type RuntimeEvent = RuntimeEvent;
+	type PrecompilesType = FrontierPrecompiles<Runtime>;
+	type PrecompilesValue = PrecompilesValue;
+	type ChainId = ChainId;
+	type BlockGasLimit = BlockGasLimit;
+	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	type OnChargeTransaction = EVMTransactionChargeHandler<EVMDealWithFees<Runtime>>;
+	type FindAuthor = FindAuthorTruncated<Aura>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -541,17 +649,17 @@ construct_runtime!(
 		// Utility
 		Utility: pallet_utility::{Pallet, Call, Event} = 4,
 		Motion: pallet_motion::{Pallet, Call, Event<T>} = 5,
-		
+
 		// Monetary stuff.
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 11,
 		Assets: pallet_assets::{Pallet, Call, Storage, Config<T>, Event<T>} = 12,
-		
+
 		// Governance
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 15,
-		Collective: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
-		
-		
+		CouncilCollective: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
+
+
 		// Collator support. The order of these 4 are important and shall not change.
 		Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
 		CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
@@ -564,6 +672,11 @@ construct_runtime!(
 		PolkadotXcm: pallet_xcm::{Pallet, Call, Event<T>, Origin, Config} = 31,
 		CumulusXcm: cumulus_pallet_xcm::{Pallet, Event<T>, Origin} = 32,
 		DmpQueue: cumulus_pallet_dmp_queue::{Pallet, Call, Storage, Event<T>} = 33,
+
+		// Frontier
+		Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Origin, Config} = 50,
+		Evm: pallet_evm::{Pallet, Config, Call, Storage, Event<T>} = 51,
+		BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 52,
 	}
 );
 
