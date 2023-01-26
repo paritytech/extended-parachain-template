@@ -17,6 +17,7 @@ codec = { package = "parity-scale-codec", version = "3.0.0" }
 serde = { version = "1.0.145", features = ["derive"] }
 hex-literal = "0.3.4"
 jsonrpsee = { version = "0.15.1", features = ["server"] }
+futures = { version = "0.3.1", features = ["compat"] }
 
 # Local
 parachain-template-runtime = { path = "../runtime" }
@@ -75,12 +76,10 @@ cumulus-relay-chain-rpc-interface = { git = "https://github.com/paritytech/cumul
 
 # Frontier
 fc-cli = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
-fc-consensus = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
 fc-db = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
 fc-mapping-sync = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
 fc-rpc = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
 fc-rpc-core = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
-fp-consensus = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
 fp-evm = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
 fp-rpc = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
 fp-storage = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }

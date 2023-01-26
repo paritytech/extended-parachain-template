@@ -308,5 +308,7 @@ fn testnet_genesis(
 				map
 			},
 		},
+		ethereum: Default::default(),
+		base_fee: Default::default(),
 	}
 }
