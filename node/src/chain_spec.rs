@@ -198,7 +198,8 @@ fn testnet_genesis(
 		balances: parachain_template_runtime::BalancesConfig {
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
-		// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
+		// Configure additional assets here
+		// For reference this configures asset ALT1 & ALT2 with owners, alice and bob, respectively
 		assets: parachain_template_runtime::AssetsConfig {
 			assets: vec![
 				(1, alice.into(), true, 10_000_000_0000),
@@ -297,7 +298,7 @@ fn testnet_genesis(
 				map.insert(
 					// H160 address for benchmark usage
 					H160::from_str("1000000000000000000000000000000000000001")
-						.expect("internal H160 is valid; qed"),
+					.expect("internal H160 is valid; qed"),
 					fp_evm::GenesisAccount {
 						nonce: U256::from(1),
 						balance: U256::from(1_000_000_000_000_000_000_000_000u128),
@@ -305,6 +306,19 @@ fn testnet_genesis(
 						code: vec![0x00],
 					},
 				);
+				map.insert(
+					// H160 address of dev account
+					H160::from_str("C0F0f4ab324C46e55D02D0033343B4Be8A55532d")
+						.expect("internal H160 is valid; qed"),
+					fp_evm::GenesisAccount {
+						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+							.expect("internal U256 is valid; qed"),
+						code: Default::default(),
+						nonce: Default::default(),
+						storage: Default::default(),
+					},
+				);
+				
 				map
 			},
 		},

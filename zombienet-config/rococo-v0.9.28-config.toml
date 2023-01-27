@@ -1,0 +1,41 @@
+# 4 validators and 2 parachain collators
+[settings]
+timeout = 1000
+
+[relaychain]
+default_command = "./bin/polkadot-release-0.9.28"
+chain = "rococo-local"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "charlie"
+  validator = true
+ 
+  [[relaychain.nodes]]
+  name = "dave"
+  validator = true
+
+[[parachains]]
+id = 2000
+cumulus_based = true 
+
+  [parachains.collator]
+  name = "collator-2000-01"
+  command = "./bin/ept_0.9.30_2000"
+  rpc_port = 9933
+
+[[parachains]]
+id = 2001
+cumulus_based = true 
+
+  [parachains.collator]
+  name = "collator-2001-01"
+  command = "./bin/ept_0.9.30_2001"
+

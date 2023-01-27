@@ -7,7 +7,7 @@
 
 use jsonrpsee::RpcModule;
 use sc_cli::SubstrateCli;
-use std::{collections::BTreeMap, path::PathBuf, sync::Arc};
+use std::{collections::BTreeMap, sync::Arc};
 
 use parachain_template_runtime::{opaque::Block, AccountId, Balance, Hash, Index as Nonce};
 
