@@ -56,9 +56,11 @@ use frame_system::{
 use pallet_balances::NegativeImbalance;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::{
-    Account as EVMAccount, EVMCurrencyAdapter, EnsureAddressRoot, EnsureAddressTruncated, HashedAddressMapping,
-    OnChargeEVMTransaction, Runner, FeeCalculator
+    Account as EVMAccount, EVMCurrencyAdapter, EnsureAddressRoot, EnsureAddressTruncated, FeeCalculator,
+    HashedAddressMapping, OnChargeEVMTransaction, Runner,
 };
+mod precompiles;
+use precompiles::FrontierPrecompiles;
 
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
@@ -611,10 +613,10 @@ where
 parameter_types! {
     pub const ChainId: u64 = 100;
     pub BlockGasLimit: U256 = U256::from(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT.ref_time() / WEIGHT_PER_GAS);
-    // pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+    pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
     pub WeightPerGas: Weight = Weight::from_ref_time(WEIGHT_PER_GAS);
 }
-// TODO: Fix dependencies
+
 impl pallet_evm::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type ChainId = ChainId;
@@ -631,8 +633,8 @@ impl pallet_evm::Config for Runtime {
     type AddressMapping = HashedAddressMapping<BlakeTwo256>;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
 
-    type PrecompilesType = (); // FrontierPrecompiles<Runtime>;
-    type PrecompilesValue = (); // PrecompilesValue;
+    type PrecompilesType = FrontierPrecompiles<Runtime>;
+    type PrecompilesValue = PrecompilesValue;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type FindAuthor = FindAuthorTruncated<Aura>;
 }
