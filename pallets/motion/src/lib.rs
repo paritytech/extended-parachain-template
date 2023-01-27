@@ -70,7 +70,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			T::SimpleMajorityOrigin::ensure_origin(origin)?;
 
-			let motion_result = Self::do_dispatch(call);
+			let motion_result = Self::do_dispatch(*call);
 			Self::deposit_event(Event::DispatchSimpleMajority { motion_result });
 
 			Ok(Pays::No.into())
@@ -95,7 +95,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			T::SuperMajorityOrigin::ensure_origin(origin)?;
 
-			let motion_result = Self::do_dispatch(call);
+			let motion_result = Self::do_dispatch(*call);
 			Self::deposit_event(Event::DispatchSuperMajority { motion_result });
 
 			Ok(Pays::No.into())
@@ -120,7 +120,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			T::UnanimousOrigin::ensure_origin(origin)?;
 
-			let motion_result = Self::do_dispatch(call);
+			let motion_result = Self::do_dispatch(*call);
 			Self::deposit_event(Event::DispatchUnanimous { motion_result });
 
 			Ok(Pays::No.into())
@@ -133,10 +133,9 @@ pub mod pallet {
 		/// Should only be called after the origin is ensured.
 		///
 		/// Returns the `DispatchResult` from the dispatched call.
-		fn do_dispatch(call: Box<<T as Config>::RuntimeCall>) -> DispatchResult {
+		fn do_dispatch(call: <T as Config>::RuntimeCall) -> DispatchResult {
 			let res = call.dispatch_bypass_filter(frame_system::RawOrigin::Root.into());
-			let motion_result = res.map(|_| ()).map_err(|e| e.error);
-			motion_result
+			res.map(|_| ()).map_err(|e| e.error)
 		}
 	}
 }
