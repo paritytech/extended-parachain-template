@@ -36,12 +36,15 @@ fn setup_proposal(threshold: u32, motion_type: MotionType) -> Proposal {
 
 	// Setup motion with specified origin type
 	let motion = match motion_type {
-		MotionType::SimpleMajority =>
-			RuntimeCall::Motion(pallet_motion::Call::simple_majority { call: Box::new(inner_call) }),
-		MotionType::SuperMajority =>
-			RuntimeCall::Motion(pallet_motion::Call::super_majority { call: Box::new(inner_call) }),
-		MotionType::Unanimous =>
-			RuntimeCall::Motion(pallet_motion::Call::unanimous { call: Box::new(inner_call) }),
+		MotionType::SimpleMajority => {
+			RuntimeCall::Motion(pallet_motion::Call::simple_majority { call: Box::new(inner_call) })
+		},
+		MotionType::SuperMajority => {
+			RuntimeCall::Motion(pallet_motion::Call::super_majority { call: Box::new(inner_call) })
+		},
+		MotionType::Unanimous => {
+			RuntimeCall::Motion(pallet_motion::Call::unanimous { call: Box::new(inner_call) })
+		},
 	};
 
 	let proposal_len: u32 = motion.using_encoded(|p| p.len() as u32);
