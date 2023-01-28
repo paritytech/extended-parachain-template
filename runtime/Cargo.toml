@@ -193,4 +193,7 @@ try-runtime = [
   "pallet-utility/try-runtime",
   "pallet-xcm/try-runtime",
   "parachain-info/try-runtime",
+  "pallet-base-fee/try-runtime",
+  "pallet-ethereum/try-runtime",
+  "pallet-evm/try-runtime",
 ]
