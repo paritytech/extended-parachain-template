@@ -31,7 +31,7 @@ use frame_support::{
 	construct_runtime,
 	dispatch::DispatchClass,
 	parameter_types,
-	traits::{Everything, AsEnsureOriginWithArg, ConstU32},
+	traits::{AsEnsureOriginWithArg, ConstU32, Everything},
 	weights::{
 		constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
 		WeightToFeeCoefficients, WeightToFeePolynomial,
@@ -40,7 +40,7 @@ use frame_support::{
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot, EnsureSigned
+	EnsureRoot, EnsureSigned,
 };
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
@@ -57,7 +57,6 @@ use weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight};
 // XCM Imports
 use xcm::latest::prelude::BodyId;
 use xcm_executor::XcmExecutor;
-
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
@@ -363,7 +362,6 @@ parameter_types! {
 }
 
 impl pallet_assets::Config for Runtime {
-	
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = Balance;
 	type AssetId = u32;
@@ -488,11 +486,14 @@ impl pallet_collective::Config<CouncilInstance> for Runtime {
 }
 
 impl pallet_motion::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type RuntimeCall = RuntimeCall;
-    type SimpleMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 1, 2>;
-    type SuperMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 3, 4>;
-    type UnanimousOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 1, 1>;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type SimpleMajorityOrigin =
+		pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 1, 2>;
+	type SuperMajorityOrigin =
+		pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 3, 4>;
+	type UnanimousOrigin =
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 1, 1>;
 }
 
 impl pallet_aura::Config for Runtime {
@@ -547,17 +548,17 @@ construct_runtime!(
 		// Utility
 		Utility: pallet_utility::{Pallet, Call, Event} = 4,
 		Motion: pallet_motion::{Pallet, Call, Event<T>} = 5,
-		
+
 		// Monetary stuff.
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
 		TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 11,
 		Assets: pallet_assets::{Pallet, Call, Storage, Config<T>, Event<T>} = 12,
-		
+
 		// Governance
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 15,
 		CouncilCollective: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
-		
-		
+
+
 		// Collator support. The order of these 4 are important and shall not change.
 		Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
 		CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
