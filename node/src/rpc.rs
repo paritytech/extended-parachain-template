@@ -35,6 +35,19 @@ use fc_rpc::{
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use fp_storage::EthereumStorageSchema;
 
+use crate::cli::EthApi as EthApiCmd;
+use moonbeam_rpc_debug::{Debug, DebugServer};
+use moonbeam_rpc_trace::{Trace, TraceServer};
+use moonbeam_rpc_txpool::{TxPool, TxPoolServer};
+
+use crate::tracing;
+
+#[derive(Clone)]
+pub struct EvmTracingConfig {
+	pub tracing_requesters: tracing::RpcRequesters,
+	pub trace_filter_max_count: u32,
+}
+
 /// Full client dependencies.
 pub struct FullDeps<C, P, A: ChainApi> {
 	/// The client instance to use.
@@ -53,6 +66,8 @@ pub struct FullDeps<C, P, A: ChainApi> {
 	pub network: Arc<NetworkService<Block, Hash>>,
 	/// EthFilterApi pool.
 	pub filter_pool: Option<FilterPool>,
+	/// The list of optional RPC extensions.
+	pub ethapi_cmd: Vec<EthApiCmd>,
 	/// Backend.
 	pub backend: Arc<fc_db::Backend<Block>>,
 	/// Maximum number of logs in a query.
@@ -128,6 +143,7 @@ where
 pub fn create_full<C, P, BE, A>(
 	deps: FullDeps<C, P, A>,
 	subscription_task_executor: SubscriptionTaskExecutor,
+	tracing_config: EvmTracingConfig,
 ) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
 	C: ProvideRuntimeApi<Block>
@@ -144,7 +160,9 @@ where
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
-		+ BlockBuilder<Block>,
+		+ BlockBuilder<Block>
+		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
+		+ moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block>,
 	P: TransactionPool<Block = Block> + Sync + Send + 'static,
 	BE: Backend<Block> + 'static,
 	BE::State: StateBackend<BlakeTwo256>,
@@ -168,6 +186,7 @@ where
 		// enable_dev_signer,
 		network,
 		filter_pool,
+		ethapi_cmd,
 		backend,
 		// max_past_logs,
 		fee_history_cache,
@@ -185,7 +204,7 @@ where
 		Eth::new(
 			client.clone(),
 			pool.clone(),
-			graph,
+			graph.clone(),
 			Some(parachain_template_runtime::TransactionConverter),
 			network.clone(),
 			signers,
@@ -238,7 +257,22 @@ where
 		.into_rpc(),
 	)?;
 
-	io.merge(Web3::new(client).into_rpc())?;
+	io.merge(Web3::new(client.clone()).into_rpc())?;
+
+	if ethapi_cmd.contains(&EthApiCmd::Txpool) {
+		io.merge(TxPool::new(Arc::clone(&client), graph).into_rpc())?;
+	}
+
+	if let Some(trace_filter_requester) = tracing_config.tracing_requesters.trace {
+		io.merge(
+			Trace::new(client, trace_filter_requester, tracing_config.trace_filter_max_count)
+				.into_rpc(),
+		)?;
+	}
+
+	if let Some(debug_requester) = tracing_config.tracing_requesters.debug {
+		io.merge(Debug::new(debug_requester).into_rpc())?;
+	}
 
 	Ok(io)
 }

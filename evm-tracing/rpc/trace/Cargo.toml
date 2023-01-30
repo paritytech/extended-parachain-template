@@ -1,0 +1,42 @@
+[package]
+name = "moonbeam-rpc-trace"
+authors = [ "PureStake" ]
+edition = "2021"
+homepage = "https://moonbeam.network"
+license = "GPL-3.0-only"
+repository = "https://github.com/PureStake/moonbeam/"
+version = "0.6.0"
+
+[dependencies]
+ethereum = { version = "0.12.0", default-features = false, features = [ "with-codec" ] }
+ethereum-types = { version = "0.13.1", default-features = false }
+futures = { version = "0.3" }
+jsonrpsee = { version = "0.15.0", features = ["server", "macros"] }
+serde = { version = "1.0", features = [ "derive" ] }
+sha3 = "0.10"
+tokio = { version = "1.10", features = [ "sync", "time" ] }
+tracing = "0.1.34"
+
+# Moonbeam
+moonbeam-client-evm-tracing = { path = "../.." }
+moonbeam-rpc-core-trace = { path = "../../rpc-core/trace" }
+moonbeam-rpc-core-types = { path = "../../rpc-core/types" }
+moonbeam-rpc-primitives-debug = { path = "../../primitives/rpc/debug" }
+
+# Substrate
+sc-client-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sc-network = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sc-utils = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.30" }
+sp-api = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.30" }
+sp-block-builder = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.30" }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
+sp-io = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.30" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.30" }
+sp-std = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.30" }
+sp-transaction-pool = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.30" }
+
+# Frontier
+fc-consensus = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fc-rpc = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fc-rpc-core = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fp-rpc = { git = "https://github.com/paritytech/frontier", default-features = false, branch = "polkadot-v0.9.30" }

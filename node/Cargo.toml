@@ -18,6 +18,7 @@ serde = { version = "1.0.145", features = ["derive"] }
 hex-literal = "0.3.4"
 jsonrpsee = { version = "0.15.1", features = ["server"] }
 futures = { version = "0.3.1", features = ["compat"] }
+tokio = { version = "1.13.0", features = ["macros", "sync"] }
 
 # Local
 parachain-template-runtime = { path = "../runtime" }
@@ -84,6 +85,15 @@ fp-evm = { git = 'https://github.com/paritytech/frontier.git', branch = "polkado
 fp-rpc = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
 fp-storage = { git = 'https://github.com/paritytech/frontier.git', branch = "polkadot-v0.9.30" }
 
+# Moonbeam tracing
+evm-tracing-events = { path = "../evm-tracing/primitives/rpc/evm-tracing-events", default-features = false }
+moonbeam-primitives-ext = { path = "../evm-tracing/ext", default-features = false }
+moonbeam-rpc-primitives-debug = { path = "../evm-tracing/primitives/rpc/debug", default-features = false }
+moonbeam-rpc-primitives-txpool = { path = "../evm-tracing/primitives/rpc/txpool", default-features = false }
+moonbeam-rpc-debug = { path = "../evm-tracing/rpc/debug", default-features = false }
+moonbeam-rpc-trace = { path = "../evm-tracing/rpc/trace", default-features = false }
+moonbeam-rpc-txpool = { path = "../evm-tracing/rpc/txpool" }
+
 [build-dependencies]
 substrate-build-script-utils = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
 
@@ -94,3 +104,4 @@ runtime-benchmarks = [
 	"polkadot-cli/runtime-benchmarks",
 ]
 try-runtime = ["parachain-template-runtime/try-runtime"]
+evm-tracing = ["parachain-template-runtime/evm-tracing"]

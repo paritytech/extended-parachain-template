@@ -45,10 +45,18 @@ use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 
 use polkadot_service::CollatorPair;
 
+use crate::{
+	cli::{EthApi as EthApiCmd, EvmTracingConfig},
+	tracing,
+};
+
 /// Native executor instance.
 pub struct TemplateRuntimeExecutor;
 impl sc_executor::NativeExecutionDispatch for TemplateRuntimeExecutor {
-	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+	type ExtendHostFunctions = (
+		frame_benchmarking::benchmarking::HostFunctions,
+		moonbeam_primitives_ext::moonbeam_ext::HostFunctions,
+	);
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
 		parachain_template_runtime::api::dispatch(method, data)
@@ -208,6 +216,7 @@ async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
 	parachain_config: Configuration,
 	polkadot_config: Configuration,
 	collator_options: CollatorOptions,
+	tracing_config: EvmTracingConfig,
 	id: ParaId,
 	_rpc_ext_builder: RB,
 	build_import_queue: BIQ,
@@ -228,14 +237,15 @@ where
 		+ sp_api::ApiExt<
 			Block,
 			StateBackend = sc_client_api::StateBackendFor<TFullBackend<Block>, Block>,
-		> 
-		+ sp_offchain::OffchainWorkerApi<Block>
+		> + sp_offchain::OffchainWorkerApi<Block>
 		+ sp_block_builder::BlockBuilder<Block>
 		+ cumulus_primitives_core::CollectCollationInfo<Block>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ fp_rpc::EthereumRuntimeRPCApi<Block>
 		+ fp_rpc::ConvertTransactionRuntimeApi<Block>
-		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
+		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>
+		+ moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block>
+		+ moonbeam_rpc_primitives_txpool::TxPoolRuntimeApi<Block>,
 	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
 	Executor: sc_executor::NativeExecutionDispatch + 'static,
 	RB: Fn(
@@ -369,6 +379,24 @@ where
 		prometheus_registry.clone(),
 	));
 
+	let ethapi_cmd = tracing_config.ethapi.clone();
+	let tracing_requesters =
+		if ethapi_cmd.contains(&EthApiCmd::Debug) || ethapi_cmd.contains(&EthApiCmd::Trace) {
+			tracing::spawn_tracing_tasks(
+				&tracing_config,
+				tracing::SpawnTasksParams {
+					task_manager: &task_manager,
+					client: client.clone(),
+					substrate_backend: backend.clone(),
+					frontier_backend: frontier_backend.clone(),
+					filter_pool: filter_pool.clone(),
+					overrides: overrides.clone(),
+				},
+			)
+		} else {
+			tracing::RpcRequesters { debug: None, trace: None }
+		};
+
 	let rpc_extensions_builder = {
 		let client = client.clone();
 		let pool = transaction_pool.clone();
@@ -377,6 +405,11 @@ where
 		let frontier_backend = frontier_backend.clone();
 		let overrides = overrides.clone();
 		let fee_history_cache = fee_history_cache.clone();
+
+		let tracing_config = crate::rpc::EvmTracingConfig {
+			tracing_requesters,
+			trace_filter_max_count: tracing_config.ethapi_trace_max_count,
+		};
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -387,6 +420,7 @@ where
 				is_authority,
 				network: network.clone(),
 				filter_pool: filter_pool.clone(),
+				ethapi_cmd: ethapi_cmd.clone(),
 				backend: frontier_backend.clone(),
 				fee_history_cache: fee_history_cache.clone(),
 				fee_history_cache_limit: FEE_HISTORY_LIMIT,
@@ -394,7 +428,8 @@ where
 				block_data_cache: block_data_cache.clone(),
 			};
 
-			crate::rpc::create_full(deps, subscription_task_executor).map_err(Into::into)
+			crate::rpc::create_full(deps, subscription_task_executor, tracing_config.clone())
+				.map_err(Into::into)
 		})
 	};
 
@@ -519,6 +554,7 @@ pub async fn start_parachain_node(
 	parachain_config: Configuration,
 	polkadot_config: Configuration,
 	collator_options: CollatorOptions,
+	tracing_config: EvmTracingConfig,
 	id: ParaId,
 	hwbench: Option<sc_sysinfo::HwBench>,
 ) -> sc_service::error::Result<(
@@ -529,6 +565,7 @@ pub async fn start_parachain_node(
 		parachain_config,
 		polkadot_config,
 		collator_options,
+		tracing_config,
 		id,
 		|_| Ok(RpcModule::new(())),
 		parachain_build_import_queue,

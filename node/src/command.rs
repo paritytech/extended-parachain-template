@@ -303,10 +303,22 @@ pub fn run() -> Result<()> {
 				info!("Parachain genesis state: {}", genesis_state);
 				info!("Is collating: {}", if config.role.is_authority() { "yes" } else { "no" });
 
+				let tracing_config = crate::cli::EvmTracingConfig {
+					ethapi: cli.ethapi,
+					ethapi_max_permits: cli.ethapi_max_permits,
+					ethapi_trace_max_count: cli.ethapi_trace_max_count,
+					ethapi_trace_cache_duration: cli.ethapi_trace_cache_duration,
+					eth_log_block_cache: cli.eth_log_block_cache,
+					eth_statuses_cache: cli.eth_statuses_cache,
+					max_past_logs: cli.max_past_logs,
+					tracing_raw_max_memory_usage: cli.tracing_raw_max_memory_usage,
+				};
+
 				crate::service::start_parachain_node(
 					config,
 					polkadot_config,
 					collator_options,
+					tracing_config,
 					id,
 					hwbench,
 				)
