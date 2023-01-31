@@ -20,6 +20,10 @@ jobs:
           target: wasm32-unknown-unknown
           override: true
           components: rustfmt, clippy
+      - name: Install protoc
+        run: |
+          sudo apt-get install -y protobuf-compiler
+          protoc --version
 
       - uses: actions/checkout@v3
 
