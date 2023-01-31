@@ -10,7 +10,7 @@ mod weights;
 pub mod xcm_config;
 mod currency;
 
-pub use currency::{MILLIUNIT, MICROUNIT, UNIT, EXISTENTIAL_DEPOSIT};
+pub use currency::{MILLIUNIT, MICROUNIT, UNIT, EXISTENTIAL_DEPOSIT, deposit};
 
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use smallvec::smallvec;

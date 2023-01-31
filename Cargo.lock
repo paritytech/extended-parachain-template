@@ -6158,7 +6158,7 @@ dependencies = [
 
 [[package]]
 name = "parachain-template-node"
-version = "0.1.0"
+version = "0.9.370"
 dependencies = [
  "clap",
  "cumulus-client-cli",
