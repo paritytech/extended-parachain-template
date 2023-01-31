@@ -7,7 +7,7 @@ homepage = "https://substrate.io"
 license = "Unlicense"
 name = "parachain-template-node"
 repository = "https://github.com/paritytech/cumulus/"
-version = "0.1.0"
+version = "0.9.370"
 
 [dependencies]
 clap = {version = "4.1.1", features = ["derive"]}
