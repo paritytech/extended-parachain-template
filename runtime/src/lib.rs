@@ -6,10 +6,11 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-mod currency;
-use currency::*;
 mod weights;
 pub mod xcm_config;
+mod currency;
+
+pub use currency::{MILLIUNIT, MICROUNIT, UNIT, EXISTENTIAL_DEPOSIT};
 
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use smallvec::smallvec;
@@ -199,13 +200,6 @@ pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
 pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
 
-// Unit = the base number of indivisible units for balances
-pub const UNIT: Balance = 1_000_000_000_000;
-pub const MILLIUNIT: Balance = 1_000_000_000;
-pub const MICROUNIT: Balance = 1_000_000;
-
-/// The existential deposit. Set to 1/10 of the Connected Relay Chain.
-pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
 
 /// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
 /// used to limit the maximal weight of a single extrinsic.
@@ -353,12 +347,12 @@ impl pallet_balances::Config for Runtime {
 }
 
 parameter_types! {
-	pub const AssetDeposit: Balance = 100 * DOLLARS;
-	pub const AssetAccountDeposit: Balance = 10 * DOLLARS;
-	pub const ApprovalDeposit: Balance = 1 * DOLLARS;
+	pub const AssetDeposit: Balance = 10 * UNIT;
+	pub const AssetAccountDeposit: Balance = deposit(1, 16);
+	pub const ApprovalDeposit: Balance = EXISTENTIAL_DEPOSIT;
 	pub const StringLimit: u32 = 50;
-	pub const MetadataDepositBase: Balance = 10 * DOLLARS;
-	pub const MetadataDepositPerByte: Balance = 1 * DOLLARS;
+	pub const MetadataDepositBase: Balance = deposit(1, 68);
+	pub const MetadataDepositPerByte: Balance = deposit(0, 1);
 }
 
 impl pallet_assets::Config for Runtime {
@@ -460,7 +454,7 @@ impl pallet_session::Config for Runtime {
 	// Essentially just Aura, but lets be pedantic.
 	type SessionHandler = <SessionKeys as sp_runtime::traits::OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
-	type WeightInfo = ();
+	type WeightInfo = (); 
 }
 
 impl pallet_sudo::Config for Runtime {
@@ -474,8 +468,8 @@ parameter_types! {
 	pub const CouncilMaxMembers: u32 = 25;
 }
 
-type CouncilInstance = pallet_collective::Instance1;
-impl pallet_collective::Config<CouncilInstance> for Runtime {
+type CouncilCollective = pallet_collective::Instance1;
+impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type RuntimeOrigin = RuntimeOrigin;
 	type RuntimeEvent = RuntimeEvent;
 	type Proposal = RuntimeCall;
@@ -490,11 +484,11 @@ impl pallet_motion::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
 	type SimpleMajorityOrigin =
-		pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 1, 2>;
+		pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>;
 	type SuperMajorityOrigin =
-		pallet_collective::EnsureProportionMoreThan<AccountId, CouncilInstance, 3, 4>;
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
 	type UnanimousOrigin =
-		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilInstance, 1, 1>;
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>;
 }
 
 impl pallet_aura::Config for Runtime {
@@ -548,7 +542,6 @@ construct_runtime!(
 
 		// Utility
 		Utility: pallet_utility::{Pallet, Call, Event} = 4,
-		Motion: pallet_motion::{Pallet, Call, Event<T>} = 5,
 
 		// Monetary stuff.
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
@@ -557,8 +550,8 @@ construct_runtime!(
 
 		// Governance
 		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 15,
-		CouncilCollective: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
-
+		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
+		Motion: pallet_motion::{Pallet, Call, Event<T>} = 17,
 
 		// Collator support. The order of these 4 are important and shall not change.
 		Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
