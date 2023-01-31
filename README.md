@@ -33,13 +33,6 @@ cargo build --release
 
 Next you will need a compatible release of [Polkadot](https://github.com/paritytech/polkadot) to run a testnet. You may also want to use [Zombienet (available for Linux and MacOS)](https://github.com/paritytech/zombienet/releases) for spinning up a testnet: 
 
-```sh
-wget https://github.com/paritytech/zombienet/releases/download/v1.3.30/zombienet-macos
-chmod +x zombienet-macos 
-cp zombienet-macos /usr/local/bin
-```
-
-You'll need to download the Zombienet executable.
 
 You can find linux and macOS executables of the Zombienet CLI here:
 
