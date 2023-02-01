@@ -1,9 +1,12 @@
 use super::Balance;
 
-pub const MILLICENTS: Balance = 1_000_000_000;
-pub const CENTS: Balance = 1_000 * MILLICENTS; // assume this is worth about a cent.
-pub const DOLLARS: Balance = 100 * CENTS;
+pub const MICROUNIT: Balance = 1_000_000;
+pub const MILLIUNIT: Balance = 1_000 * MICROUNIT;
+pub const UNIT: Balance = 1_000 * MILLIUNIT;
 
-pub const fn _deposit(items: u32, bytes: u32) -> Balance {
-	items as Balance * 15 * CENTS + (bytes as Balance) * 6 * CENTS
+pub const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
+
+pub const fn deposit(items: u32, bytes: u32) -> Balance {
+	// https://github.com/paritytech/cumulus/blob/master/parachains/runtimes/assets/statemint/src/constants.rs#L28
+	(items as Balance * 20 * UNIT + (bytes as Balance) * 100 * MICROUNIT) / 100
 }
