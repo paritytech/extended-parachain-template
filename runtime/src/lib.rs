@@ -6,14 +6,15 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-mod currency;
 mod common;
+mod currency;
 use common::*;
 mod weights;
 pub mod xcm_config;
 
 pub use currency::{deposit, EXISTENTIAL_DEPOSIT, MICROUNIT, MILLIUNIT, UNIT};
 
+use codec::{Decode, Encode};
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use fp_rpc::TransactionStatus;
 use smallvec::smallvec;
@@ -29,7 +30,7 @@ use sp_runtime::{
         PostDispatchInfoOf, UniqueSaturatedInto, Verify,
     },
     transaction_validity::{TransactionSource, TransactionValidity},
-    ApplyExtrinsicResult, MultiSignature,
+    ApplyExtrinsicResult,
 };
 
 use sp_std::prelude::*;
@@ -78,8 +79,8 @@ use polkadot_runtime_common::{BlockHashCount, SlowAdjustingFeeUpdate};
 // Cumulus imports
 //https://github.com/paritytech/cumulus/tree/master/parachains/common
 pub use parachains_common::{
-	impls::{AccountIdOf, DealWithFees},
-	Balance, BlockNumber, Hash, Index, Signature,
+    impls::{AccountIdOf, DealWithFees},
+    Balance, BlockNumber, Hash, Index, Signature,
 };
 
 use weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight};
@@ -181,14 +182,14 @@ impl_opaque_keys! {
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("template-parachain"),
-	impl_name: create_runtime_str!("template-parachain"),
-	authoring_version: 1,
-	spec_version: 1000,
-	impl_version: 0,
-	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 1,
-	state_version: 1,
+    spec_name: create_runtime_str!("template-parachain"),
+    impl_name: create_runtime_str!("template-parachain"),
+    authoring_version: 1,
+    spec_version: 1000,
+    impl_version: 0,
+    apis: RUNTIME_API_VERSIONS,
+    transaction_version: 1,
+    state_version: 1,
 };
 
 /// This determines the average expected block time that we are targeting.
@@ -354,35 +355,29 @@ impl pallet_balances::Config for Runtime {
 }
 
 parameter_types! {
-	pub const AssetDeposit: Balance = 10 * UNIT;
-	pub const AssetAccountDeposit: Balance = deposit(1, 16);
-	pub const ApprovalDeposit: Balance = EXISTENTIAL_DEPOSIT;
-	pub const StringLimit: u32 = 50;
-	pub const MetadataDepositBase: Balance = deposit(1, 68);
-	pub const MetadataDepositPerByte: Balance = deposit(0, 1);
+    pub const AssetDeposit: Balance = 10 * UNIT;
+    pub const AssetAccountDeposit: Balance = deposit(1, 16);
+    pub const ApprovalDeposit: Balance = EXISTENTIAL_DEPOSIT;
+    pub const StringLimit: u32 = 50;
+    pub const MetadataDepositBase: Balance = deposit(1, 68);
+    pub const MetadataDepositPerByte: Balance = deposit(0, 1);
 }
 
 impl pallet_assets::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type Balance = Balance;
-	type AssetId = u32;
-	type AssetIdParameter = codec::Compact<u32>;
-	type Currency = Balances;
-	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
-	type CallbackHandle = ();
-	type ForceOrigin = EnsureRoot<AccountId>;
-	type AssetDeposit = AssetDeposit;
-	type AssetAccountDeposit = AssetAccountDeposit;
-	type MetadataDepositBase = MetadataDepositBase;
-	type MetadataDepositPerByte = MetadataDepositPerByte;
-	type ApprovalDeposit = ApprovalDeposit;
-	type StringLimit = StringLimit;
-	type Freezer = ();
-	type Extra = ();
-	type RemoveItemsLimit = ConstU32<1000>;
-	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
-	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = ();
+    type RuntimeEvent = RuntimeEvent;
+    type Balance = Balance;
+    type AssetId = u32;
+    type Currency = Balances;
+    type ForceOrigin = EnsureRoot<AccountId>;
+    type AssetDeposit = AssetDeposit;
+    type AssetAccountDeposit = AssetAccountDeposit;
+    type MetadataDepositBase = MetadataDepositBase;
+    type MetadataDepositPerByte = MetadataDepositPerByte;
+    type ApprovalDeposit = ApprovalDeposit;
+    type StringLimit = StringLimit;
+    type Freezer = ();
+    type Extra = ();
+    type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -393,8 +388,7 @@ parameter_types! {
 
 impl pallet_transaction_payment::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type OnChargeTransaction =
-		pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees<Runtime>>;
+    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, DealWithFees<Runtime>>;
     type WeightToFee = WeightToFee;
     type LengthToFee = ConstantMultiplier<Balance, TransactionByteFee>;
     type FeeMultiplierUpdate = SlowAdjustingFeeUpdate<Self>;
@@ -479,25 +473,22 @@ parameter_types! {
 
 type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Config<CouncilCollective> for Runtime {
-	type RuntimeOrigin = RuntimeOrigin;
-	type RuntimeEvent = RuntimeEvent;
-	type Proposal = RuntimeCall;
-	type MotionDuration = CouncilMotionDuration;
-	type MaxProposals = CouncilMaxProposals;
-	type MaxMembers = CouncilMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
-	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+    type RuntimeOrigin = RuntimeOrigin;
+    type RuntimeEvent = RuntimeEvent;
+    type Proposal = RuntimeCall;
+    type MotionDuration = CouncilMotionDuration;
+    type MaxProposals = CouncilMaxProposals;
+    type MaxMembers = CouncilMaxMembers;
+    type DefaultVote = pallet_collective::PrimeDefaultVote;
+    type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_motion::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeCall = RuntimeCall;
-	type SimpleMajorityOrigin =
-		pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>;
-	type SuperMajorityOrigin =
-		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
-	type UnanimousOrigin =
-		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>;
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+    type SimpleMajorityOrigin = pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>;
+    type SuperMajorityOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
+    type UnanimousOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>;
 }
 
 impl pallet_aura::Config for Runtime {
@@ -554,7 +545,6 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 
 /// Handles transaction fees from the EVM, depositing priority fee in a staking pot
 pub struct EVMDealWithFees<R>(PhantomData<R>);
-pub type AccountIdOf<R> = <R as frame_system::Config>::AccountId;
 
 impl<R> OnUnbalanced<NegativeImbalance<R>> for EVMDealWithFees<R>
 where
@@ -636,8 +626,8 @@ impl pallet_evm::Config for Runtime {
 }
 
 parameter_types! {
-    pub DefaultBaseFeePerGas: U256 = (GIGAWEI * 10_000).into();
-    pub DefaultElasticity: Permill = Permill::from_parts(125_000);
+    pub DefaultBaseFeePerGas: U256 = (GIGAWEI * 1000).into();
+    pub DefaultElasticity: Permill = Permill::zero();
 }
 
 pub struct BaseFeeThreshold;
@@ -680,25 +670,25 @@ construct_runtime!(
         Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent} = 2,
         ParachainInfo: parachain_info::{Pallet, Storage, Config} = 3,
 
-		// Utility
-		Utility: pallet_utility::{Pallet, Call, Event} = 4,
+        // Utility
+        Utility: pallet_utility::{Pallet, Call, Event} = 4,
 
         // Monetary stuff.
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>} = 10,
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage, Event<T>} = 11,
         Assets: pallet_assets::{Pallet, Call, Storage, Config<T>, Event<T>} = 12,
 
-		// Governance
-		Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 15,
-		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
-		Motion: pallet_motion::{Pallet, Call, Event<T>} = 17,
+        // Governance
+        Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>} = 15,
+        Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>} = 16,
+        Motion: pallet_motion::{Pallet, Call, Event<T>} = 17,
 
-		// Collator support. The order of these 4 are important and shall not change.
-		Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
-		CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
-		Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
-		Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
-		AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
+        // Collator support. The order of these 4 are important and shall not change.
+        Authorship: pallet_authorship::{Pallet, Call, Storage} = 20,
+        CollatorSelection: pallet_collator_selection::{Pallet, Call, Storage, Event<T>, Config<T>} = 21,
+        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>} = 22,
+        Aura: pallet_aura::{Pallet, Storage, Config<T>} = 23,
+        AuraExt: cumulus_pallet_aura_ext::{Pallet, Storage, Config} = 24,
 
         // XCM helpers.
         XcmpQueue: cumulus_pallet_xcmp_queue::{Pallet, Call, Storage, Event<T>} = 30,
