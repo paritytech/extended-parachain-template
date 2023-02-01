@@ -134,7 +134,7 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 					}
 			)
 		}) {
-			return Err(()); // Deny
+			return Err(()) // Deny
 		}
 
 		// An unexpected reserve transfer has arrived from the Relay Chain. Generally, `IsReserve`
