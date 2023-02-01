@@ -1,14 +1,6 @@
 use super::Balance;
 use frame_support::weights::constants::WEIGHT_PER_SECOND;
 
-pub const MILLICENTS: Balance = 1_000_000_000;
-pub const CENTS: Balance = 1_000 * MILLICENTS; // assume this is worth about a cent.
-pub const DOLLARS: Balance = 100 * CENTS;
-
-pub const fn _deposit(items: u32, bytes: u32) -> Balance {
-    items as Balance * 15 * CENTS + (bytes as Balance) * 6 * CENTS
-}
-
 /// Current approximation of the gas per second consumption
 pub const GAS_PER_SECOND: u64 = 160_000_000;
 
