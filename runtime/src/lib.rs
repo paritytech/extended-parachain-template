@@ -14,7 +14,6 @@ pub mod xcm_config;
 
 pub use currency::{deposit, EXISTENTIAL_DEPOSIT, MICROUNIT, MILLIUNIT, UNIT};
 
-use codec::{Decode, Encode};
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
 use fp_rpc::TransactionStatus;
 use smallvec::smallvec;
@@ -702,25 +701,6 @@ construct_runtime!(
         BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event} = 52,
     }
 );
-/// Something that can can convert ethereum-formatted transactions into Substrate-formatted transactions
-/// The `ConvertTransaction` trait is implemented twice. Once for Unchecked Extrinsic and once for Opaque Unchecked Extrinsic
-/// Essentially we wrap the raw ethereum transaction in a call to the transact extrinsic in pallet ethereum.
-pub struct TransactionConverter;
-
-impl fp_rpc::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
-    fn convert_transaction(&self, transaction: pallet_ethereum::Transaction) -> UncheckedExtrinsic {
-        UncheckedExtrinsic::new_unsigned(pallet_ethereum::Call::<Runtime>::transact { transaction }.into())
-    }
-}
-
-impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConverter {
-    fn convert_transaction(&self, transaction: pallet_ethereum::Transaction) -> opaque::UncheckedExtrinsic {
-        let extrinsic =
-            UncheckedExtrinsic::new_unsigned(pallet_ethereum::Call::<Runtime>::transact { transaction }.into());
-        let encoded = extrinsic.encode();
-        opaque::UncheckedExtrinsic::decode(&mut &encoded[..]).expect("Encoded extrinsic is always valid")
-    }
-}
 
 impl fp_self_contained::SelfContainedCall for RuntimeCall {
     type SignedInfo = H160;

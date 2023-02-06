@@ -1,20 +1,15 @@
 //! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
 
 // std
-use std::{collections::BTreeMap, sync::Arc, time::Duration};
+use std::{collections::BTreeMap, path::PathBuf, sync::Arc, time::Duration};
 
 use futures::{future, StreamExt};
-
-// rpc
-use jsonrpsee::RpcModule;
 
 use sc_client_api::BlockchainEvents;
 
 use cumulus_client_cli::CollatorOptions;
 // Local Runtime Types
-use parachain_template_runtime::{
-	opaque::Block, AccountId, Balance, Hash, Index as Nonce, RuntimeApi,
-};
+use parachain_template_runtime::{opaque::Block, AccountId, Balance, Hash, Index as Nonce, RuntimeApi};
 
 // Cumulus Imports
 use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, SlotProportion};
@@ -29,9 +24,12 @@ use cumulus_relay_chain_interface::{RelayChainError, RelayChainInterface, RelayC
 use cumulus_relay_chain_rpc_interface::{create_client_and_start_worker, RelayChainRpcInterface};
 
 // Substrate Imports
+use sc_cli::SubstrateCli;
 use sc_executor::NativeElseWasmExecutor;
 use sc_network::{NetworkBlock, NetworkService};
-use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
+use sc_service::{
+	BasePath, Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager,
+};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
 use sp_api::ConstructRuntimeApi;
 use sp_keystore::SyncCryptoStorePtr;
@@ -39,16 +37,24 @@ use sp_runtime::traits::BlakeTwo256;
 use substrate_prometheus_endpoint::Registry;
 
 // Frontier
+use fc_consensus::FrontierBlockImport;
+use fc_db::Backend as FrontierBackend;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 
+use crate::cli::Cli;
 use polkadot_service::CollatorPair;
 
 /// Native executor instance.
 pub struct TemplateRuntimeExecutor;
 impl sc_executor::NativeExecutionDispatch for TemplateRuntimeExecutor {
+	/// Only enable the benchmarking host functions when we actually want to benchmark.
+	#[cfg(feature = "runtime-benchmarks")]
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+	/// Otherwise we only use the default Substrate host functions.
+	#[cfg(not(feature = "runtime-benchmarks"))]
+	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
 		parachain_template_runtime::api::dispatch(method, data)
@@ -57,6 +63,17 @@ impl sc_executor::NativeExecutionDispatch for TemplateRuntimeExecutor {
 	fn native_version() -> sc_executor::NativeVersion {
 		parachain_template_runtime::native_version()
 	}
+}
+
+pub(crate) fn db_config_dir(config: &Configuration) -> PathBuf {
+	config
+		.base_path
+		.as_ref()
+		.map(|base_path| base_path.config_dir(config.chain_spec.id()))
+		.unwrap_or_else(|| {
+			BasePath::from_project("", "", &Cli::executable_name())
+				.config_dir(config.chain_spec.id())
+		})
 }
 
 /// Starts a `ServiceBuilder` for a full service.
@@ -96,11 +113,17 @@ where
 			Block,
 			StateBackend = sc_client_api::StateBackendFor<TFullBackend<Block>, Block>,
 		> + sp_offchain::OffchainWorkerApi<Block>
-		+ sp_block_builder::BlockBuilder<Block>,
+		+ sp_block_builder::BlockBuilder<Block>
+		+ fp_rpc::EthereumRuntimeRPCApi<Block>,
 	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
 	Executor: sc_executor::NativeExecutionDispatch + 'static,
 	BIQ: FnOnce(
 		Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+		FrontierBlockImport<
+			Block,
+			Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+			TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+		>,
 		&Configuration,
 		Option<TelemetryHandle>,
 		&TaskManager,
@@ -153,10 +176,18 @@ where
 		client.clone(),
 	);
 
-	let frontier_backend = crate::rpc::open_frontier_backend(client.clone(), config)?;
+	let frontier_backend = Arc::new(FrontierBackend::open(
+		Arc::clone(&client),
+		&config.database,
+		&db_config_dir(config),
+	)?);
+
+	let frontier_block_import =
+		FrontierBlockImport::new(client.clone(), client.clone(), frontier_backend.clone());
 
 	let import_queue = build_import_queue(
 		client.clone(),
+		frontier_block_import,
 		config,
 		telemetry.as_ref().map(|telemetry| telemetry.handle()),
 		&task_manager,
@@ -204,12 +235,11 @@ async fn build_relay_chain_interface(
 /// This is the actual implementation that is abstract over the executor and the runtime api.
 #[sc_tracing::logging::prefix_logs_with("Parachain")]
 #[allow(clippy::too_many_arguments)]
-async fn start_node_impl<RuntimeApi, Executor, RB, BIQ, BIC>(
+async fn start_node_impl<RuntimeApi, Executor, BIQ, BIC>(
 	parachain_config: Configuration,
 	polkadot_config: Configuration,
 	collator_options: CollatorOptions,
 	id: ParaId,
-	_rpc_ext_builder: RB,
 	build_import_queue: BIQ,
 	build_consensus: BIC,
 	hwbench: Option<sc_sysinfo::HwBench>,
@@ -237,13 +267,13 @@ where
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sp_api::StateBackend<BlakeTwo256>,
 	Executor: sc_executor::NativeExecutionDispatch + 'static,
-	RB: Fn(
-			Arc<TFullClient<Block, RuntimeApi, Executor>>,
-		) -> Result<RpcModule<()>, sc_service::Error>
-		+ Send
-		+ 'static,
 	BIQ: FnOnce(
 			Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+			FrontierBlockImport<
+				Block,
+				Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>>,
+				TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<Executor>>,
+			>,
 			&Configuration,
 			Option<TelemetryHandle>,
 			&TaskManager,
@@ -331,7 +361,7 @@ where
 			frontier_backend.clone(),
 			3,
 			0,
-			SyncStrategy::Normal,
+			SyncStrategy::Parachain,
 		)
 		.for_each(|()| future::ready(())),
 	);
@@ -473,6 +503,11 @@ where
 #[allow(clippy::type_complexity)]
 pub fn parachain_build_import_queue(
 	client: Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<TemplateRuntimeExecutor>>>,
+	block_import: FrontierBlockImport<
+		Block,
+		Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<TemplateRuntimeExecutor>>>,
+		TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<TemplateRuntimeExecutor>>,
+	>,
 	config: &Configuration,
 	telemetry: Option<TelemetryHandle>,
 	task_manager: &TaskManager,
@@ -493,7 +528,7 @@ pub fn parachain_build_import_queue(
 		_,
 		_,
 	>(cumulus_client_consensus_aura::ImportQueueParams {
-		block_import: client.clone(),
+		block_import,
 		client,
 		create_inherent_data_providers: move |_, _| async move {
 			let time = sp_timestamp::InherentDataProvider::from_system_time();
@@ -524,12 +559,11 @@ pub async fn start_parachain_node(
 	TaskManager,
 	Arc<TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<TemplateRuntimeExecutor>>>,
 )> {
-	start_node_impl::<RuntimeApi, TemplateRuntimeExecutor, _, _, _>(
+	start_node_impl::<RuntimeApi, TemplateRuntimeExecutor, _, _>(
 		parachain_config,
 		polkadot_config,
 		collator_options,
 		id,
-		|_| Ok(RpcModule::new(())),
 		parachain_build_import_queue,
 		|client,
 		 prometheus_registry,

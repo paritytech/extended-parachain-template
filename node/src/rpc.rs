@@ -6,7 +6,6 @@
 #![warn(missing_docs)]
 
 use jsonrpsee::RpcModule;
-use sc_cli::SubstrateCli;
 use std::{collections::BTreeMap, sync::Arc};
 
 use parachain_template_runtime::{opaque::Block, AccountId, Balance, Hash, Index as Nonce};
@@ -99,31 +98,6 @@ where
 	})
 }
 
-// TODO: This is copied from frontier. It should be imported instead after
-// https://github.com/paritytech/frontier/issues/333 is solved
-pub fn open_frontier_backend<C>(
-	client: Arc<C>,
-	config: &sc_service::Configuration,
-) -> Result<Arc<fc_db::Backend<Block>>, String>
-where
-	C: sp_blockchain::HeaderBackend<Block>,
-{
-	let config_dir = config
-		.base_path
-		.as_ref()
-		.map(|base_path| base_path.config_dir(config.chain_spec.id()))
-		.unwrap_or_else(|| {
-			sc_service::BasePath::from_project("", "", &crate::cli::Cli::executable_name())
-				.config_dir(config.chain_spec.id())
-		});
-	let path = config_dir.join("frontier").join("db");
-
-	Ok(Arc::new(fc_db::Backend::<Block>::new(
-		client,
-		&fc_db::DatabaseSettings { source: fc_db::DatabaseSource::RocksDb { path, cache_size: 0 } },
-	)?))
-}
-
 /// Instantiate all RPC extensions.
 pub fn create_full<C, P, BE, A>(
 	deps: FullDeps<C, P, A>,
@@ -180,13 +154,14 @@ where
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 
 	let signers = Vec::new();
+	let no_tx_converter: Option<fp_rpc::NoTransactionConverter> = None;
 
 	io.merge(
 		Eth::new(
 			client.clone(),
 			pool.clone(),
 			graph,
-			Some(parachain_template_runtime::TransactionConverter),
+			no_tx_converter,
 			network.clone(),
 			signers,
 			overrides.clone(),
