@@ -15,4 +15,4 @@ serde_json = "1.0"
 
 ethereum-types = { version = "0.13.1" }
 
-fc-rpc-core = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.30" }
+fc-rpc-core = { git = "https://github.com/paritytech/frontier", branch = "polkadot-v0.9.37" }

@@ -42,9 +42,10 @@ use frame_support::{
     construct_runtime,
     dispatch::DispatchClass,
     parameter_types,
+    traits::AsEnsureOriginWithArg,
     weights::{
-        constants::WEIGHT_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
-        WeightToFeePolynomial,
+        constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight, WeightToFeeCoefficient,
+        WeightToFeeCoefficients, WeightToFeePolynomial,
     },
     ConsensusEngineId, PalletId,
 };
@@ -54,7 +55,7 @@ use frame_support::{
 };
 use frame_system::{
     limits::{BlockLength, BlockWeights},
-    EnsureRoot,
+    EnsureRoot, EnsureSigned,
 };
 use pallet_balances::NegativeImbalance;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
@@ -218,7 +219,10 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(5);
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 /// We allow for 0.5 of a second of compute with a 12 second average block time.
-const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_div(2);
+const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
+    WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
+    cumulus_primitives_core::relay_chain::v2::MAX_POV_SIZE as u64,
+);
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -367,7 +371,10 @@ impl pallet_assets::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Balance = Balance;
     type AssetId = u32;
+    type AssetIdParameter = codec::Compact<u32>;
     type Currency = Balances;
+    type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+    type CallbackHandle = ();
     type ForceOrigin = EnsureRoot<AccountId>;
     type AssetDeposit = AssetDeposit;
     type AssetAccountDeposit = AssetAccountDeposit;
@@ -377,7 +384,10 @@ impl pallet_assets::Config for Runtime {
     type StringLimit = StringLimit;
     type Freezer = ();
     type Extra = ();
+    type RemoveItemsLimit = ConstU32<1000>;
     type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+    #[cfg(feature = "runtime-benchmarks")]
+    type BenchmarkHelper = ();
 }
 
 parameter_types! {
@@ -613,6 +623,7 @@ impl pallet_evm::Config for Runtime {
     type BlockGasLimit = BlockGasLimit;
     type WeightPerGas = WeightPerGas;
     type OnChargeTransaction = EVMTransactionChargeHandler<EVMDealWithFees<Runtime>>;
+    type OnCreate = ();
 
     type CallOrigin = EnsureAddressRoot<AccountId>;
     type WithdrawOrigin = EnsureAddressTruncated;
@@ -1020,12 +1031,15 @@ impl_runtime_apis! {
         fn elasticity() -> Option<Permill> {
             Some(BaseFee::elasticity())
         }
+
+        fn gas_limit_multiplier_support() {}
+
     }
 
     impl moonbeam_rpc_primitives_debug::DebugRuntimeApi<Block> for Runtime {
         fn trace_transaction(
-            extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-            traced_transaction: &pallet_ethereum::Transaction,
+            _extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+            _traced_transaction: &pallet_ethereum::Transaction,
         ) -> Result<
             (),
             sp_runtime::DispatchError,
@@ -1036,10 +1050,10 @@ impl_runtime_apis! {
 
                 // Apply the a subset of extrinsics: all the substrate-specific or ethereum
                 // transactions that preceded the requested transaction.
-                for ext in extrinsics.into_iter() {
+                for ext in _extrinsics.into_iter() {
                     let _ = match &ext.0.function {
                         RuntimeCall::Ethereum(pallet_ethereum::Call::transact { transaction }) => {
-                            if transaction == traced_transaction {
+                            if transaction == _traced_transaction {
                                 EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));
                                 return Ok(());
                             } else {
@@ -1061,8 +1075,8 @@ impl_runtime_apis! {
         }
 
         fn trace_block(
-            extrinsics: Vec<<Block as BlockT>::Extrinsic>,
-            known_transactions: Vec<H256>,
+            _extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+            _known_transactions: Vec<H256>,
         ) -> Result<
             (),
             sp_runtime::DispatchError,
@@ -1075,10 +1089,10 @@ impl_runtime_apis! {
                 config.estimate = true;
 
                 // Apply all extrinsics. Ethereum extrinsics are traced.
-                for ext in extrinsics.into_iter() {
+                for ext in _extrinsics.into_iter() {
                     match &ext.0.function {
                         RuntimeCall::Ethereum(pallet_ethereum::Call::transact { transaction }) => {
-                            if known_transactions.contains(&transaction.hash()) {
+                            if _known_transactions.contains(&transaction.hash()) {
                                 // Each known extrinsic is a new call stack.
                                 EvmTracer::emit_new();
                                 EvmTracer::new().trace(|| Executive::apply_extrinsic(ext));

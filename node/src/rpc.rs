@@ -60,8 +60,6 @@ pub struct FullDeps<C, P, A: ChainApi> {
 	pub deny_unsafe: DenyUnsafe,
 	/// The Node authority flag
 	pub is_authority: bool,
-	/// Whether to enable dev signer
-	// pub enable_dev_signer: bool,
 	/// Network service
 	pub network: Arc<NetworkService<Block, Hash>>,
 	/// EthFilterApi pool.
@@ -70,8 +68,6 @@ pub struct FullDeps<C, P, A: ChainApi> {
 	pub ethapi_cmd: Vec<EthApiCmd>,
 	/// Backend.
 	pub backend: Arc<fc_db::Backend<Block>>,
-	/// Maximum number of logs in a query.
-	// pub max_past_logs: u32,
 	/// Fee history cache.
 	pub fee_history_cache: FeeHistoryCache,
 	/// Maximum fee history cache size.
