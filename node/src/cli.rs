@@ -42,7 +42,6 @@ pub enum Subcommand {
 	#[cfg(not(feature = "try-runtime"))]
 	/// Placeholder when binary is not built with `--feature try-runtime`
 	TryRuntime,
-
 	// TODO!
 	// Db meta columns information
 	// FrontierDb(fc_cli::FrontierDbCmd)
@@ -72,8 +71,8 @@ pub struct Cli {
 	pub no_hardware_benchmarks: bool,
 
 	/// Enable Ethereum compatible JSON-RPC servers (enabled by default).
-    #[arg(long = "enable-evm-rpc", long, default_value = "true")]
-    pub enable_evm_rpc: bool,
+	#[arg(long = "enable-evm-rpc", long, default_value = "true")]
+	pub enable_evm_rpc: bool,
 
 	/// Enable EVM tracing module on a non-authority node.
 	#[arg(long, value_delimiter = ',')]

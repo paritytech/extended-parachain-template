@@ -6,10 +6,10 @@ mod chain_spec;
 #[macro_use]
 mod service;
 mod cli;
+mod client;
 mod command;
 mod rpc;
 mod tracing;
-mod client;
 
 fn main() -> sc_cli::Result<()> {
 	command::run()

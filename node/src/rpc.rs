@@ -198,8 +198,8 @@ where
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 
 	if !enable_evm_rpc {
-        return Ok(io);
-    }
+		return Ok(io);
+	}
 
 	let signers = Vec::new();
 

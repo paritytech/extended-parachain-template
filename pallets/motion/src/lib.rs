@@ -69,13 +69,13 @@ pub mod pallet {
 			call: Box<<T as Config>::RuntimeCall>,
 		) -> DispatchResultWithPostInfo {
 			T::SimpleMajorityOrigin::ensure_origin(origin)?;
-			
+
 			let motion_result = Self::do_dispatch(call);
 			Self::deposit_event(Event::DispatchSimpleMajority { motion_result });
-			
+
 			Ok(Pays::No.into())
 		}
-		
+
 		/// Ensures the super majority is met and dispatches a call with `Root` origin.
 		///
 		/// # <weight>
@@ -94,13 +94,13 @@ pub mod pallet {
 			call: Box<<T as Config>::RuntimeCall>,
 		) -> DispatchResultWithPostInfo {
 			T::SuperMajorityOrigin::ensure_origin(origin)?;
-			
+
 			let motion_result = Self::do_dispatch(call);
 			Self::deposit_event(Event::DispatchSuperMajority { motion_result });
-			
+
 			Ok(Pays::No.into())
 		}
-		
+
 		/// Ensures unanimous voting is met and dispatches a call with `Root` origin.
 		///
 		/// # <weight>
@@ -119,7 +119,7 @@ pub mod pallet {
 			call: Box<<T as Config>::RuntimeCall>,
 		) -> DispatchResultWithPostInfo {
 			T::UnanimousOrigin::ensure_origin(origin)?;
-			
+
 			let motion_result = Self::do_dispatch(call);
 			Self::deposit_event(Event::DispatchUnanimous { motion_result });
 
