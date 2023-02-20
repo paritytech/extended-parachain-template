@@ -71,7 +71,9 @@ pub struct Cli {
 	#[arg(long)]
 	pub no_hardware_benchmarks: bool,
 
-
+	/// Enable Ethereum compatible JSON-RPC servers (enabled by default).
+    #[arg(long = "enable-evm-rpc", long, default_value = "true")]
+    pub enable_evm_rpc: bool,
 
 	/// Enable EVM tracing module on a non-authority node.
 	#[arg(long, value_delimiter = ',')]

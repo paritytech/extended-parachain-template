@@ -269,6 +269,7 @@ async fn start_node_impl<RuntimeApi, Executor, BIQ, BIC>(
 	collator_options: CollatorOptions,
 	tracing_config: EvmTracingConfig,
 	para_id: ParaId,
+	enable_evm_rpc: bool,
 	build_import_queue: BIQ,
 	build_consensus: BIC,
 	_hwbench: Option<sc_sysinfo::HwBench>,
@@ -498,6 +499,7 @@ where
 				fee_history_cache_limit: FEE_HISTORY_LIMIT,
 				overrides: overrides.clone(),
 				block_data_cache: block_data_cache.clone(),
+				enable_evm_rpc,
 			};
 
 			crate::rpc::create_full(deps, subscription_task_executor, tracing_config.clone())
@@ -734,6 +736,7 @@ pub async fn start_parachain_node(
 	collator_options: CollatorOptions,
 	tracing_config: EvmTracingConfig,
 	para_id: ParaId,
+	enable_evm_rpc: bool,
 	hwbench: Option<sc_sysinfo::HwBench>,
 ) -> sc_service::error::Result<(
 	TaskManager,
@@ -745,6 +748,7 @@ pub async fn start_parachain_node(
 		collator_options,
 		tracing_config,
 		para_id,
+		enable_evm_rpc,
 		build_import_queue,
 		build_consensus,
 		hwbench,

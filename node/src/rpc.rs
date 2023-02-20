@@ -76,6 +76,8 @@ pub struct FullDeps<C, P, A: ChainApi> {
 	pub overrides: Arc<OverrideHandle<Block>>,
 	/// Cache for Ethereum block data.
 	pub block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
+	/// Enable EVM RPC server
+	pub enable_evm_rpc: bool,
 }
 
 pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
@@ -189,10 +191,15 @@ where
 		fee_history_cache_limit,
 		overrides,
 		block_data_cache,
+		enable_evm_rpc,
 	} = deps;
 
 	io.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
+
+	if !enable_evm_rpc {
+        return Ok(io);
+    }
 
 	let signers = Vec::new();
 

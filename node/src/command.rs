@@ -291,6 +291,7 @@ pub fn run() -> Result<()> {
 				);
 
 				let id = ParaId::from(para_id);
+				let enable_evm_rpc = cli.enable_evm_rpc;
 
 				let parachain_account =
 					AccountIdConversion::<polkadot_primitives::v2::AccountId>::into_account_truncating(&id);
@@ -327,6 +328,7 @@ pub fn run() -> Result<()> {
 					collator_options,
 					tracing_config,
 					id,
+					enable_evm_rpc,
 					hwbench,
 				)
 				.await
