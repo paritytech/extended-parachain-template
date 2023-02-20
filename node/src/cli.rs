@@ -71,9 +71,7 @@ pub struct Cli {
 	#[arg(long)]
 	pub no_hardware_benchmarks: bool,
 
-	/// Relay chain arguments
-	#[arg(raw = true)]
-	pub relay_chain_args: Vec<String>,
+
 
 	/// Enable EVM tracing module on a non-authority node.
 	#[arg(long, value_delimiter = ',')]
@@ -110,6 +108,10 @@ pub struct Cli {
 	/// Maximum number of logs in a query.
 	#[arg(long, default_value = "10000")]
 	pub max_past_logs: u32,
+
+	/// Relay chain arguments
+	#[arg(raw = true)]
+	pub relay_chain_args: Vec<String>,
 }
 
 #[derive(Debug)]

@@ -17,7 +17,7 @@ use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
 use crate::{
 	chain_spec,
 	cli::{Cli, RelayChainCli, Subcommand},
-	service::{new_partial, TemplateRuntimeExecutor},
+	service::{new_partial, ParachainNativeExecutor},
 };
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
@@ -114,11 +114,11 @@ macro_rules! construct_async_run {
 		runner.async_run(|$config| {
 			let $components = new_partial::<
 				RuntimeApi,
-				TemplateRuntimeExecutor,
+				ParachainNativeExecutor,
 				_
 			>(
 				&$config,
-				crate::service::parachain_build_import_queue,
+				crate::service::build_import_queue,
 			)?;
 			let task_manager = $components.task_manager;
 			{ $( $code )* }.map(|v| (v, task_manager))
@@ -200,7 +200,7 @@ pub fn run() -> Result<()> {
 			match cmd {
 				BenchmarkCmd::Pallet(cmd) => {
 					if cfg!(feature = "runtime-benchmarks") {
-						runner.sync_run(|config| cmd.run::<Block, TemplateRuntimeExecutor>(config))
+						runner.sync_run(|config| cmd.run::<Block, ParachainNativeExecutor>(config))
 					} else {
 						Err("Benchmarking wasn't enabled when building the node. \
 					You can enable it with `--features runtime-benchmarks`."
@@ -208,9 +208,9 @@ pub fn run() -> Result<()> {
 					}
 				},
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					let partials = new_partial::<RuntimeApi, TemplateRuntimeExecutor, _>(
+					let partials = new_partial::<RuntimeApi, ParachainNativeExecutor, _>(
 						&config,
-						crate::service::parachain_build_import_queue,
+						crate::service::build_import_queue,
 					)?;
 					cmd.run(partials.client)
 				}),
@@ -225,9 +225,9 @@ pub fn run() -> Result<()> {
 				},
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-					let partials = new_partial::<RuntimeApi, TemplateRuntimeExecutor, _>(
+					let partials = new_partial::<RuntimeApi, ParachainNativeExecutor, _>(
 						&config,
-						crate::service::parachain_build_import_queue,
+						crate::service::build_import_queue,
 					)?;
 					let db = partials.backend.expose_db();
 					let storage = partials.backend.expose_storage();
