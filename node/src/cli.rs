@@ -72,7 +72,6 @@ pub struct Cli {
 
 	// TODO: Enabled by default, as turning it off would break the following ethapi commands
 	// Unless specially handled
-
 	/// Enable Ethereum compatible JSON-RPC servers.
 	/// Currently there is no way this is disabled by the user as the presence or absence of this flag would
 	/// both lead to a `true` value

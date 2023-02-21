@@ -172,8 +172,8 @@ where
 		NetApiServer, Web3, Web3ApiServer,
 	};
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
-	use substrate_frame_rpc_system::{System, SystemApiServer};
 	use sc_rpc::dev::DevApiServer;
+	use substrate_frame_rpc_system::{System, SystemApiServer};
 
 	let mut io = RpcModule::new(());
 	let FullDeps {
@@ -197,7 +197,7 @@ where
 
 	io.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
-    io.merge(sc_rpc::dev::Dev::new(client.clone(), deny_unsafe).into_rpc())?;
+	io.merge(sc_rpc::dev::Dev::new(client.clone(), deny_unsafe).into_rpc())?;
 
 	if !enable_evm_rpc {
 		return Ok(io);
