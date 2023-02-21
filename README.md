@@ -2,7 +2,7 @@
 
 A [Frontier](https://github.com/paritytech/frontier/) + [Cumulus](https://github.com/paritytech/cumulus/)-based Substrate node, ready for hacking ☁️..
 
-### Description
+### 🔰 Description
 
 This project is originally a fork of the [Substrate Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template) which in turn is a fork of 
 [Substrate Node Template](https://github.com/substrate-developer-hub/substrate-node-template), modified to include dependencies required for registering this node as a **parathread** or **parachain**.
@@ -11,11 +11,11 @@ This repository also comes with Ethereum compatibility layer built using [Fronti
 
 ## 🚀 Getting Started
 
-### Rust Setup
+### 🦀 Rust Setup
 
 Make sure you have Rust installed along with everything that's needed to compile a substrate node. More details [here](./docs/rust-setup.md).
 
-### Build
+### 🔧 Build
 
 1. Clone the template repository:
 
@@ -29,7 +29,7 @@ git clone https://github.com/paritytech/frontier-parachin-template
 cargo build --release
 ```
 
-### Run a local network
+### 🕸️ Run a local network
  You will need a compatible release of [Polkadot](https://github.com/paritytech/polkadot) to run a local network. You may also want to use [Zombienet](https://github.com/paritytech/zombienet/releases) (available for Linux and MacOS),  for spinning up a full fledged relay chain - parachain environment. You can find more information about running a local test network [HERE](./docs/zombienet.md)
 
 

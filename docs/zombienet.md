@@ -41,7 +41,7 @@ Commands:
 
 ## Setting up Zombienet config:
 
-You may use a reference implementation from the folder `zombienet-config` or make your own. We provide a simple configuration for you called [2r1p.toml](../zombienet-config/2r1p.toml) which spins up two validators for the relay chain, and one collator for your parachain to get you quickly upto speed. 
+You may use a reference implementation from the folder `zombienet-config` or make your own. We provide a simple configuration for you called [2r1p.toml](../zombienet-config/2r1p.toml) which spins up two validators for the relay chain, and one collator for your parachain to get you quickly upto speed.
 
 ⚠️ Take note: the path of the polkadot executable used there is `../bin/polkadot` which means you need to have a folder called `bin` outside the repository directory which contains your compiled polkadot binary which must be named as `polkadot`.  
 
