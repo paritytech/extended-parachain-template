@@ -5,7 +5,7 @@ edition = "2021"
 homepage = "https://substrate.io"
 license = "Unlicense"
 name = "parachain-template-runtime"
-repository = "https://github.com/paritytech/cumulus/"
+repository = "https://github.com/paritytech/frontier-parachain-template/"
 version = "0.9.37"
 
 [package.metadata.docs.rs]
@@ -205,6 +205,7 @@ try-runtime = [
   "pallet-base-fee/try-runtime",
   "pallet-ethereum/try-runtime",
   "pallet-evm/try-runtime",
+  "fp-self-contained/try-runtime",
 ]
 
 evm-tracing = [ "evm-tracing-events", "moonbeam-evm-tracer", "rlp", "sha3" ]
