@@ -70,7 +70,12 @@ pub struct Cli {
 	#[arg(long)]
 	pub no_hardware_benchmarks: bool,
 
-	/// Enable Ethereum compatible JSON-RPC servers (enabled by default).
+	// TODO: Enabled by default, as turning it off would break the following ethapi commands
+	// Unless specially handled
+
+	/// Enable Ethereum compatible JSON-RPC servers.
+	/// Currently there is no way this is disabled by the user as the presence or absence of this flag would
+	/// both lead to a `true` value
 	#[arg(long = "enable-evm-rpc", long, default_value = "true")]
 	pub enable_evm_rpc: bool,
 
