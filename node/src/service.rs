@@ -49,7 +49,6 @@ use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 // Tracing
 use crate::{
 	cli::{EthApi as EthApiCmd, EvmTracingConfig},
-	// client::BaseRuntimeApiCollection,
 	tracing,
 };
 
