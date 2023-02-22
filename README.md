@@ -1,5 +1,11 @@
 # Frontier Parachain Template 
 
+## ⚠️ [Private Repository] 
+### This repository currently has dependencies on a fork of moonbeam. 
+
+This will remain the case until [Frontier supports debug and trace APIs.](https://github.com/paritytech/frontier/pull/768) 
+ 
+
 A [Frontier](https://github.com/paritytech/frontier/) + [Cumulus](https://github.com/paritytech/cumulus/)-based Substrate node, ready for hacking ☁️..
 
 ### 🔰 Description
