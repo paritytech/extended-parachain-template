@@ -7,8 +7,6 @@ This project is originally a fork of the [Substrate Parachain Template](https://
 modified to include dependencies required for registering this node as a **parathread** or
 **parachain** to a **relay chain**.
 
-This repository also comes with Ethereum compatibility layer built using [Frontier](https://github.com/paritytech/frontier) and [Debug-Trace API from Moonbeam](https://github.com/PureStake/moonbeam/). 
-
 ## Getting Started
 
 ### Rust Setup
