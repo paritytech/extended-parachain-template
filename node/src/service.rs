@@ -291,7 +291,7 @@ async fn start_node_impl(
 			collator_key: collator_key.expect("Command line arguments do not allow this. qed"),
 			relay_chain_slot_duration,
 			recovery_handle: Box::new(overseer_handle),
-			sync_service
+			sync_service,
 		};
 
 		start_collator(params).await?;
@@ -305,7 +305,7 @@ async fn start_node_impl(
 			relay_chain_slot_duration,
 			import_queue: import_queue_service,
 			recovery_handle: Box::new(overseer_handle),
-			sync_service
+			sync_service,
 		};
 
 		start_full_node(params)?;
