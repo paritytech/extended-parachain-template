@@ -28,11 +28,8 @@ enum MotionType {
 // sets up collective proposal with `threshold` and `motion_type`.
 fn setup_proposal(threshold: u32, motion_type: MotionType) -> Proposal {
 	//Inner call (requires sudo). Will be wrapped by pallet_motion.
-	let inner_call = RuntimeCall::Balances(pallet_balances::Call::set_balance {
-		who: 5,
-		new_free: 5,
-		new_reserved: 0,
-	});
+	let inner_call =
+		RuntimeCall::Balances(pallet_balances::Call::force_set_balance { who: 5, new_free: 5 });
 
 	// Setup motion with specified origin type
 	let motion = match motion_type {
@@ -115,7 +112,6 @@ fn simple_majority_works() {
 				record(RuntimeEvent::Balances(pallet_balances::Event::BalanceSet {
 					who: 5,
 					free: 5,
-					reserved: 0,
 				})),
 				record(RuntimeEvent::Motion(MotionEvent::DispatchSimpleMajority {
 					motion_result: Ok(())
@@ -191,7 +187,6 @@ fn super_majority_works() {
 				record(RuntimeEvent::Balances(pallet_balances::Event::BalanceSet {
 					who: 5,
 					free: 5,
-					reserved: 0,
 				})),
 				record(RuntimeEvent::Motion(MotionEvent::DispatchSuperMajority {
 					motion_result: Ok(())
@@ -275,7 +270,6 @@ fn unanimous_works() {
 				record(RuntimeEvent::Balances(pallet_balances::Event::BalanceSet {
 					who: 5,
 					free: 5,
-					reserved: 0,
 				})),
 				record(RuntimeEvent::Motion(MotionEvent::DispatchUnanimous {
 					motion_result: Ok(())
