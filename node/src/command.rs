@@ -238,7 +238,6 @@ pub fn run() -> Result<()> {
 
 			let runner = cli.create_runner(cmd)?;
 
-			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
 			type HostFunctionsOf<E> = ExtendedHostFunctions<
 				sp_io::SubstrateHostFunctions,
 				<E as NativeExecutionDispatch>::ExtendHostFunctions,
