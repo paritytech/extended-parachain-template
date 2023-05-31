@@ -6,7 +6,7 @@ edition = "2021"
 homepage = "https://substrate.io"
 license = "Unlicense"
 name = "parachain-template-node"
-repository = "https://github.com/paritytech/cumulus/"
+repository = "https://github.com/paritytech/extended-parachain-template/"
 version = "0.9.400"
 
 [dependencies]
