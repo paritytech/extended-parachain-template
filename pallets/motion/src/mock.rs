@@ -78,6 +78,7 @@ pub type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Config<CouncilCollective> for Test {
 	type RuntimeOrigin = RuntimeOrigin;
 	type Proposal = RuntimeCall;
+	type SetMembersOrigin = frame_system::EnsureRoot<u64>;
 	type RuntimeEvent = RuntimeEvent;
 	type MotionDuration = CouncilMotionDuration;
 	type MaxProposals = CouncilMaxProposals;
