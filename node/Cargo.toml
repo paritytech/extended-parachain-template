@@ -18,7 +18,8 @@ serde = {version = "1.0.160", features = ["derive"]}
 color-print = "0.3.4"
 
 # Local
-parachain-template-runtime = {path = "../runtime"}
+devnet-template-runtime = {path = "../runtime/devnet"}
+mainnet-template-runtime = {path = "../runtime/mainnet"}
 
 # Substrate
 frame-benchmarking = {git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42"}
@@ -80,11 +81,13 @@ substrate-build-script-utils = {git = "https://github.com/paritytech/substrate",
 default = []
 runtime-benchmarks = [
   "try-runtime-cli/try-runtime",
-  "parachain-template-runtime/runtime-benchmarks",
+  "mainnet-template-runtime/runtime-benchmarks",
+  "devnet-template-runtime/runtime-benchmarks",
   "polkadot-cli/runtime-benchmarks",
 ]
 try-runtime = [
   "try-runtime-cli/try-runtime",
-  "parachain-template-runtime/try-runtime",
+  "mainnet-template-runtime/try-runtime",
+  "devnet-template-runtime/try-runtime",
   "dep:sp-io",
 ]
