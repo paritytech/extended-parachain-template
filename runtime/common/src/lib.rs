@@ -1,11 +1,14 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use sp_runtime::Perbill;
 
-// todo pub mod xcm_config;
-
 use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight};
 
-pub use parachains_common::BlockNumber;
+// Cumulus types re-export
+// These types are shared between the mainnet and devnet runtimes
+//https://github.com/paritytech/cumulus/tree/master/parachains/common
+pub use parachains_common::{
+	impls::DealWithFees, AccountId, AuraId, Balance, BlockNumber, Hash, Index, Signature,
+};
 
 /// This determines the average expected block time that we are targeting.
 /// Blocks will be produced at a minimum duration defined by `SLOT_DURATION`.

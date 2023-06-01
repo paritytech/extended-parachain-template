@@ -76,7 +76,6 @@ cumulus-primitives-timestamp = {git = "https://github.com/paritytech/cumulus.git
 cumulus-primitives-utility = {git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.42", default-features = false}
 pallet-collator-selection = {git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.42", default-features = false}
 parachain-info = {git = "https://github.com/paritytech/cumulus.git", branch = "polkadot-v0.9.42", default-features = false}
-parachains-common = {git = "https://github.com/paritytech/cumulus", branch = "polkadot-v0.9.42", default-features = false}
 
 [features]
 default = [
