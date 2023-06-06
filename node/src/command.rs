@@ -1,11 +1,10 @@
-use std::net::SocketAddr;
+use std::{net::SocketAddr, path::PathBuf};
 
 use codec::Encode;
 use cumulus_client_cli::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use log::{info, warn};
-use parachain_template_runtime::Block;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
@@ -13,19 +12,79 @@ use sc_cli::{
 use sc_service::config::{BasePath, PrometheusConfig};
 use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
+use template_common::Block;
 
 use crate::{
 	chain_spec,
 	cli::{Cli, RelayChainCli, Subcommand},
-	service::{new_partial, ParachainNativeExecutor},
+	service::{new_partial, DevnetRuntimeExecutor, MainnetRuntimeExecutor},
 };
+
+/// Helper enum that is used for better distinction of different parachain/runtime configuration
+/// (it is based/calculated on ChainSpec's 'chain_spec' attribute)
+#[derive(Debug, PartialEq, Default)]
+enum Runtime {
+	/// This is the default runtime (actually based on rococo)
+	#[default]
+	Default,
+	Devnet,
+	Mainnet,
+}
+
+trait RuntimeResolver {
+	fn runtime(&self) -> Runtime;
+}
+/// Private helper that pattern matches on the input (which is expected to be a ChainSpec ID)
+/// and returns the Runtime accordingly.
+fn runtime(id: &str) -> Runtime {
+	if id.starts_with("dev") {
+		Runtime::Devnet
+	} else if id.starts_with("main") {
+		Runtime::Mainnet
+	} else {
+		log::warn!("No specific runtime was recognized for ChainSpec's Id: '{}', so Runtime::Default will be used", id);
+		Runtime::default()
+	}
+}
+/// Resolve runtime from ChainSpec ID
+impl RuntimeResolver for dyn ChainSpec {
+	fn runtime(&self) -> Runtime {
+		runtime(self.id())
+	}
+}
+/// Implementation, that can resolve [`Runtime`] from any json configuration file
+impl RuntimeResolver for PathBuf {
+	fn runtime(&self) -> Runtime {
+		#[derive(Debug, serde::Deserialize)]
+		struct EmptyChainSpecWithId {
+			id: String,
+		}
+
+		let file = std::fs::File::open(self).expect("Failed to open file");
+		let reader = std::io::BufReader::new(file);
+		let chain_spec: EmptyChainSpecWithId = sp_serializer::from_reader(reader)
+			.expect("Failed to read 'json' file with ChainSpec configuration");
+
+		runtime(&chain_spec.id)
+	}
+}
 
 fn load_spec(id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
 	Ok(match id {
-		"dev" => Box::new(chain_spec::development_config()),
-		"template-rococo" => Box::new(chain_spec::local_testnet_config()),
-		"" | "local" => Box::new(chain_spec::local_testnet_config()),
-		path => Box::new(chain_spec::ChainSpec::from_json_file(std::path::PathBuf::from(path))?),
+		"dev" => Box::new(chain_spec::devnet::development_config()),
+		"template-rococo" => Box::new(chain_spec::devnet::local_testnet_config()),
+		"" | "local" => Box::new(chain_spec::devnet::local_testnet_config()),
+		"main" | "mainnet-dev" => Box::new(chain_spec::mainnet::development_config()),
+		"mainnet-local" => Box::new(chain_spec::mainnet::local_testnet_config()),
+		path => {
+			let path: PathBuf = path.into();
+			match path.runtime() {
+				Runtime::Devnet | Runtime::Default => {
+					Box::new(chain_spec::DevnetChainSpec::from_json_file(path)?)
+				},
+				Runtime::Mainnet => Box::new(chain_spec::MainChainSpec::from_json_file(path)?),
+			}
+		},
 	})
 }
 
@@ -64,8 +123,11 @@ impl SubstrateCli for Cli {
 		load_spec(id)
 	}
 
-	fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		&parachain_template_runtime::VERSION
+	fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
+		match chain_spec.runtime() {
+			Runtime::Devnet | Runtime::Default => &devnet_template_runtime::VERSION,
+			Runtime::Mainnet => &mainnet_template_runtime::VERSION,
+		}
 	}
 }
 
@@ -112,12 +174,52 @@ impl SubstrateCli for RelayChainCli {
 macro_rules! construct_async_run {
 	(|$components:ident, $cli:ident, $cmd:ident, $config:ident| $( $code:tt )* ) => {{
 		let runner = $cli.create_runner($cmd)?;
-		runner.async_run(|$config| {
-			let $components = new_partial(&$config)?;
-			let task_manager = $components.task_manager;
-			{ $( $code )* }.map(|v| (v, task_manager))
-		})
+		match runner.config().chain_spec.runtime() {
+			Runtime::Devnet | Runtime::Default => {
+				runner.async_run(|$config| {
+					let $components = new_partial::<devnet_template_runtime::RuntimeApi, DevnetRuntimeExecutor, _>(
+						&$config,
+						crate::service::build_import_queue::<devnet_template_runtime::RuntimeApi, DevnetRuntimeExecutor>,
+					)?;
+					let task_manager = $components.task_manager;
+					{ $( $code )* }.map(|v| (v, task_manager))
+				})
+			}
+			Runtime::Mainnet => {
+				runner.async_run(|$config| {
+					let $components = new_partial::<mainnet_template_runtime::RuntimeApi, MainnetRuntimeExecutor, _>(
+						&$config,
+						crate::service::build_import_queue::<mainnet_template_runtime::RuntimeApi, MainnetRuntimeExecutor>,
+					)?;
+					let task_manager = $components.task_manager;
+					{ $( $code )* }.map(|v| (v, task_manager))
+				})
+			}
+		}
 	}}
+}
+
+macro_rules! construct_benchmark_partials {
+	($config:expr, |$partials:ident| $code:expr) => {
+		match $config.chain_spec.runtime() {
+			Runtime::Devnet | Runtime::Default => {
+				let $partials =
+					new_partial::<devnet_template_runtime::RuntimeApi, DevnetRuntimeExecutor, _>(
+						&$config,
+						crate::service::build_import_queue::<_, DevnetRuntimeExecutor>,
+					)?;
+				$code
+			},
+			Runtime::Mainnet => {
+				let $partials =
+					new_partial::<mainnet_template_runtime::RuntimeApi, MainnetRuntimeExecutor, _>(
+						&$config,
+						crate::service::build_import_queue::<_, MainnetRuntimeExecutor>,
+					)?;
+				$code
+			},
+		}
+	};
 }
 
 /// Parse command line arguments into service configuration.
@@ -194,16 +296,21 @@ pub fn run() -> Result<()> {
 			match cmd {
 				BenchmarkCmd::Pallet(cmd) => {
 					if cfg!(feature = "runtime-benchmarks") {
-						runner.sync_run(|config| cmd.run::<Block, ParachainNativeExecutor>(config))
+						runner.sync_run(|config| match config.chain_spec.runtime() {
+							Runtime::Devnet | Runtime::Default => {
+								cmd.run::<Block, DevnetRuntimeExecutor>(config)
+							},
+							Runtime::Mainnet => cmd.run::<Block, MainnetRuntimeExecutor>(config),
+						})
 					} else {
 						Err("Benchmarking wasn't enabled when building the node. \
 					You can enable it with `--features runtime-benchmarks`."
 							.into())
 					}
 				},
+
 				BenchmarkCmd::Block(cmd) => runner.sync_run(|config| {
-					let partials = new_partial(&config)?;
-					cmd.run(partials.client)
+					construct_benchmark_partials!(config, |partials| cmd.run(partials.client))
 				}),
 				#[cfg(not(feature = "runtime-benchmarks"))]
 				BenchmarkCmd::Storage(_) => {
@@ -216,10 +323,12 @@ pub fn run() -> Result<()> {
 				},
 				#[cfg(feature = "runtime-benchmarks")]
 				BenchmarkCmd::Storage(cmd) => runner.sync_run(|config| {
-					let partials = new_partial(&config)?;
-					let db = partials.backend.expose_db();
-					let storage = partials.backend.expose_storage();
-					cmd.run(config, partials.client.clone(), db, storage)
+					construct_benchmark_partials!(config, |partials| {
+						let db = partials.backend.expose_db();
+						let storage = partials.backend.expose_storage();
+
+						cmd.run(config, partials.client.clone(), db, storage)
+					})
 				}),
 				BenchmarkCmd::Machine(cmd) => {
 					runner.sync_run(|config| cmd.run(&config, SUBSTRATE_REFERENCE_HARDWARE.clone()))
@@ -232,8 +341,8 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
-			use parachain_template_runtime::MILLISECS_PER_BLOCK;
 			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
+			use template_common::MILLISECS_PER_BLOCK;
 			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
 
 			let runner = cli.create_runner(cmd)?;
@@ -251,14 +360,24 @@ pub fn run() -> Result<()> {
 
 			let info_provider = timestamp_with_aura_info(MILLISECS_PER_BLOCK);
 
-			runner.async_run(|_| {
-				Ok((
-					cmd.run::<Block, HostFunctionsOf<ParachainNativeExecutor>, _>(Some(
-						info_provider,
-					)),
-					task_manager,
-				))
-			})
+			match runner.config().chain_spec.runtime() {
+				Runtime::Devnet | Runtime::Default => runner.async_run(|_config| {
+					Ok((
+						cmd.run::<Block, HostFunctionsOf<DevnetRuntimeExecutor>, _>(Some(
+							info_provider,
+						)),
+						task_manager,
+					))
+				}),
+				Runtime::Mainnet => runner.async_run(|_config| {
+					Ok((
+						cmd.run::<Block, HostFunctionsOf<MainnetRuntimeExecutor>, _>(Some(
+							info_provider,
+						)),
+						task_manager,
+					))
+				}),
+			}
 		},
 		#[cfg(not(feature = "try-runtime"))]
 		Some(Subcommand::TryRuntime) => Err("Try-runtime was not enabled when building the node. \
@@ -307,17 +426,29 @@ pub fn run() -> Result<()> {
 				if !collator_options.relay_chain_rpc_urls.is_empty() && cli.relay_chain_args.len() > 0 {
 					warn!("Detected relay chain node arguments together with --relay-chain-rpc-url. This command starts a minimal Polkadot node that only uses a network-related subset of all relay chain CLI options.");
 				}
+				match config.chain_spec.runtime() {
+					Runtime::Default | Runtime::Devnet => {
+						// If you want to support a custom SS58 prefix (that isn’t yet registered in the ss58-registry), 
+						// you are required to call this function with your desired prefix [Ss58AddressFormat::custom].
+						// This will enable the node to decode ss58 addresses with this prefix.
+						// This SS58 version/format is also only used by the node and not by the runtime.
+						sp_core::crypto::set_default_ss58_version(devnet_template_runtime::SS58Prefix::get().into());
+						crate::service::start_parachain_node::<devnet_template_runtime::RuntimeApi, DevnetRuntimeExecutor>
+							(config, polkadot_config, collator_options, id, hwbench)
+							.await
+							.map(|r| r.0)
+							.map_err(Into::into)
 
-				crate::service::start_parachain_node(
-					config,
-					polkadot_config,
-					collator_options,
-					id,
-					hwbench,
-				)
-				.await
-				.map(|r| r.0)
-				.map_err(Into::into)
+					}
+					Runtime::Mainnet => {
+						sp_core::crypto::set_default_ss58_version(mainnet_template_runtime::SS58Prefix::get().into());
+						crate::service::start_parachain_node::<mainnet_template_runtime::RuntimeApi, MainnetRuntimeExecutor>
+							(config, polkadot_config, collator_options, id, hwbench)
+							.await
+							.map(|r| r.0)
+							.map_err(Into::into)
+					}
+				}
 			})
 		},
 	}
