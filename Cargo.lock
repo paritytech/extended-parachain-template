@@ -4998,6 +4998,7 @@ dependencies = [
  "scale-info",
  "smallvec",
  "sp-api",
+ "sp-arithmetic",
  "sp-block-builder",
  "sp-consensus-aura",
  "sp-core",
@@ -6786,12 +6787,14 @@ dependencies = [
  "sp-keystore",
  "sp-offchain",
  "sp-runtime",
+ "sp-serializer",
  "sp-session",
  "sp-timestamp",
  "sp-transaction-pool",
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
  "substrate-prometheus-endpoint",
+ "template-common",
  "try-runtime-cli",
  "xcm",
 ]
@@ -11421,6 +11424,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.23",
+]
+
+[[package]]
+name = "sp-serializer"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.42#ff24c60ac7d9f87727ecdd0ded9a80c56e4f4b65"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

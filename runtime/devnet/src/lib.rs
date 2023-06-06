@@ -30,7 +30,7 @@ use frame_support::{
 	dispatch::DispatchClass,
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU32, ConstU64, ConstU8, EitherOfDiverse, Everything},
-	weights::{constants::WEIGHT_REF_TIME_PER_SECOND, ConstantMultiplier, Weight},
+	weights::{ConstantMultiplier, Weight},
 	PalletId,
 };
 use frame_system::{
