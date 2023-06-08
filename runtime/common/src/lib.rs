@@ -7,7 +7,7 @@ use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight};
 // These types are shared between the mainnet and devnet runtimes
 //https://github.com/paritytech/cumulus/tree/master/parachains/common
 pub use parachains_common::{
-	impls::DealWithFees, AccountId, AuraId, Balance, BlockNumber, Hash, Index, Signature, Block
+	impls::DealWithFees, AccountId, AuraId, Balance, Block, BlockNumber, Hash, Index, Signature,
 };
 
 /// This determines the average expected block time that we are targeting.
