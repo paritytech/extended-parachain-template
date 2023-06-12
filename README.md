@@ -1,11 +1,10 @@
-# Extended Substrate Cumulus Parachain Template
+# Extended Parachain Template
 
-A new [Cumulus](https://github.com/paritytech/cumulus/)-based Substrate node, ready for hacking ☁️..
+The **Extended Parachain Template** is a ready-to-use parachain template, pre-configured with the [Assets](https://paritytech.github.io/substrate/master/pallet_assets/index.html) pallet, a simple Governance system ([Collective](https://paritytech.github.io/substrate/master/pallet_collective/index.html) & [Motion](https://github.com/paritytech/extended-parachain-template/tree/main/pallets/motion) pallets), and other useful base features.
 
-This project is originally a fork of the [Substrate Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template) which in turn is a fork of 
-[Substrate Node Template](https://github.com/substrate-developer-hub/substrate-node-template),
-modified to include dependencies required for registering this node as a **parathread** or
-**parachain** to a **relay chain**.
+This is a solid starting point for most Parachain projects as it is a more feature-rich alternative to the base [Substrate Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template) (which it is derived from).
+
+This template is maintained by the **Delivery Services** team at **Parity**.
 
 ## Getting Started
 
@@ -15,15 +14,13 @@ First, complete the [basic Rust setup instructions](./docs/rust-setup.md).
 
 ### Build
 
-Clone the extended template repository on either the `main` branch or the `frontier` branch: 
+Clone the extended parachain template repository: 
 
 ```sh
-# Checkout the frontier branch and build the parachain
-git checkout frontier 
+git clone https://github.com/paritytech/extended-parachain-template
 ```
 
-Use the following command to build the node
-without launching it:
+Use the following command to build the node without launching it:
 
 ```sh
 cargo build --release
