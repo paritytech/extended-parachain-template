@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ZOMBIENET_V=v1.3.55
-POLKADOT_V=v0.9.40
+POLKADOT_V=v0.9.42
 
 case "$(uname -s)" in
     Linux*)     MACHINE=Linux;;
