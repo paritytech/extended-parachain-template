@@ -2,17 +2,23 @@ use super::*;
 pub(crate) use crate as pallet_motion;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU16, ConstU64},
+	traits::{ConstU16, ConstU32, ConstU64},
+	weights::Weight,
 };
+use frame_system::limits::BlockWeights;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
-	BuildStorage,
+	BuildStorage, Perbill,
 };
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
+
+parameter_types! {
+	pub RuntimeBlockWeights: BlockWeights = BlockWeights::default();
+}
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -65,6 +71,10 @@ impl pallet_balances::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type ExistentialDeposit = ConstU64<1>;
 	type AccountStore = System;
+	type HoldIdentifier = ();
+	type FreezeIdentifier = ();
+	type MaxHolds = ConstU32<0>;
+	type MaxFreezes = ConstU32<0>;
 	type WeightInfo = ();
 }
 
@@ -72,6 +82,7 @@ parameter_types! {
 	pub CouncilMotionDuration: u64 = 7;
 	pub const CouncilMaxProposals: u32 = 100;
 	pub const CouncilMaxMembers: u32 = 100;
+	pub MaxProposalWeight: Weight = Perbill::from_percent(50) * RuntimeBlockWeights::get().max_block;
 }
 
 pub type CouncilCollective = pallet_collective::Instance1;
@@ -84,6 +95,7 @@ impl pallet_collective::Config<CouncilCollective> for Test {
 	type MaxProposals = CouncilMaxProposals;
 	type MaxMembers = CouncilMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type MaxProposalWeight = MaxProposalWeight;
 	type WeightInfo = ();
 }
 
