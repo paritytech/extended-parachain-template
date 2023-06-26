@@ -235,11 +235,7 @@ fn testnet_genesis(
 		sudo: parachain_template_runtime::SudoConfig { key: root_key },
 		council: parachain_template_runtime::CouncilConfig {
 			phantom: std::marker::PhantomData,
-			members: endowed_accounts
-				.iter()
-				.enumerate()
-				.filter_map(|(idx, acc)| if idx % 2 == 0 { Some(acc.clone()) } else { None })
-				.collect::<Vec<_>>(),
+			members: endowed_accounts.iter().take(4).map(|acc| acc.clone()).collect::<Vec<_>>(),
 		},
 		parachain_system: Default::default(),
 		polkadot_xcm: parachain_template_runtime::PolkadotXcmConfig {
