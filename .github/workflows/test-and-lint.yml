@@ -14,6 +14,13 @@ jobs:
     env:
       NIGHTLY: nightly-2023-06-04 # Fix version to prevent cache misses with nightly changes
     steps:
+      - name: Free up space on runner
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
       - name: Rust Setup
         uses: actions-rs/toolchain@v1
         with:
@@ -44,6 +51,12 @@ jobs:
           command: fmt
           args: --all --check
       
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@988c164c3d0e93c4dbab36aaf5bbeb77425b2894 # v2.4.0
+        with:
+            cache-on-failure: true
+            cache-all-crates: true
+  
       - name: Check Build
         run: |
           SKIP_WASM_BUILD=1 cargo check --release
@@ -51,8 +64,8 @@ jobs:
       - name: Run tests
         run: cargo test --locked --verbose --all
 
-      - name: Clean compilation artifacts
-        run: cargo clean
+      # - name: Clean compilation artifacts
+      #   run: cargo clean
       
       - name: Ensure benchmarking compiles
         run: >
