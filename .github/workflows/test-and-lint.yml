@@ -52,7 +52,7 @@ jobs:
           args: --all --check
       
       - name: Rust Cache
-        uses: Swatinem/rust-cache@988c164c3d0e93c4dbab36aaf5bbeb77425b2894 # v2.4.0
+        uses: Swatinem/rust-cache@v2.5.0
         with:
             cache-on-failure: true
             cache-all-crates: true
@@ -64,8 +64,8 @@ jobs:
       - name: Run tests
         run: cargo test --locked --verbose --all
 
-      # - name: Clean compilation artifacts
-      #   run: cargo clean
+      - name: Check try-runtime build
+        run: cargo check --release --features=try-runtime
       
       - name: Ensure benchmarking compiles
         run: >
