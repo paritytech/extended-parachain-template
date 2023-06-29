@@ -11,8 +11,6 @@ jobs:
   build:
     name: "Test and Lint"
     runs-on: ubuntu-latest
-    env:
-      NIGHTLY: nightly-2023-06-04 # Fix version to prevent cache misses with nightly changes
     steps:
       - name: Free up space on runner
         run: |
@@ -29,13 +27,6 @@ jobs:
           target: wasm32-unknown-unknown
           override: true
           components: rustfmt, clippy
-
-      - name: Install Nightly
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ env.NIGHTLY }}
-          target: wasm32-unknown-unknown
 
       - name: Install protoc
         run: |
