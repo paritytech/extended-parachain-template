@@ -17,6 +17,8 @@ pub type DevnetChainSpec =
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
 
+const PARA_ID : u32 = 2000;
+
 /// Helper function to generate a crypto pair from seed
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
 	TPublic::Pair::from_string(&format!("//{}", seed), None)
@@ -112,7 +114,7 @@ pub mod devnet {
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
 					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-					1000.into(),
+					PARA_ID,
 				)
 			},
 			Vec::new(),
@@ -122,7 +124,7 @@ pub mod devnet {
 			None,
 			Extensions {
 				relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-				para_id: 1000,
+				para_id: PARA_ID,
 			},
 		)
 	}
@@ -168,7 +170,7 @@ pub mod devnet {
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
 					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-					2000.into(),
+					PARA_ID,
 				)
 			},
 			// Bootnodes
@@ -184,7 +186,7 @@ pub mod devnet {
 			// Extensions
 			Extensions {
 				relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-				para_id: 2000,
+				para_id: PARA_ID,
 			},
 		)
 	}
@@ -307,7 +309,7 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
 					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-					1000.into(),
+					PARA_ID,
 				)
 			},
 			Vec::new(),
@@ -317,7 +319,7 @@ pub mod mainnet {
 			None,
 			Extensions {
 				relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-				para_id: 1000,
+				para_id: PARA_ID,
 			},
 		)
 	}
@@ -363,7 +365,7 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
 					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-					2000.into(),
+					PARA_ID,
 				)
 			},
 			// Bootnodes
@@ -379,7 +381,7 @@ pub mod mainnet {
 			// Extensions
 			Extensions {
 				relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
-				para_id: 2000,
+				para_id: PARA_ID,
 			},
 		)
 	}
