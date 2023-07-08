@@ -114,7 +114,7 @@ pub mod devnet {
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
 					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-					PARA_ID,
+					PARA_ID.into(),
 				)
 			},
 			Vec::new(),
@@ -170,7 +170,7 @@ pub mod devnet {
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
 					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-					PARA_ID,
+					PARA_ID.into(),
 				)
 			},
 			// Bootnodes
@@ -253,7 +253,7 @@ pub mod devnet {
 			sudo: devnet_rt::SudoConfig { key: root_key },
 			council: devnet_rt::CouncilConfig {
 				phantom: std::marker::PhantomData,
-				members: endowed_accounts.iter().take(4).map(|acc| acc.clone()).collect::<Vec<_>>(),
+				members: endowed_accounts.iter().take(4).cloned().collect(),
 			},
 			parachain_system: Default::default(),
 			polkadot_xcm: devnet_rt::PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
@@ -305,7 +305,7 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
 					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-					PARA_ID,
+					PARA_ID.into(),
 				)
 			},
 			Vec::new(),
@@ -361,7 +361,7 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
 					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-					PARA_ID,
+					PARA_ID.into(),
 				)
 			},
 			// Bootnodes
@@ -444,7 +444,7 @@ pub mod mainnet {
 			sudo: mainnet_rt::SudoConfig { key: root_key },
 			council: mainnet_rt::CouncilConfig {
 				phantom: std::marker::PhantomData,
-				members: endowed_accounts.iter().take(4).map(|acc| acc.clone()).collect::<Vec<_>>(),
+				members: endowed_accounts.iter().take(4).cloned().collect(),
 			},
 			parachain_system: Default::default(),
 			polkadot_xcm: mainnet_rt::PolkadotXcmConfig {
