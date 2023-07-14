@@ -106,11 +106,11 @@ pub type Executive = frame_executive::Executive<
 pub mod fee {
 	use super::{Balance, ExtrinsicBaseWeight, MILLIUNIT};
 	use frame_support::weights::{
-		Weight, WeightToFeeCoefficient, WeightToFeeCoefficients, WeightToFeePolynomial,
+		FeePolynomial, Weight, WeightToFeeCoefficient, WeightToFeeCoefficients,
+		WeightToFeePolynomial,
 	};
 	use smallvec::smallvec;
-	use sp_arithmetic::traits::{BaseArithmetic, Unsigned};
-	use sp_runtime::{Perbill, SaturatedConversion};
+	use sp_runtime::Perbill;
 
 	/// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
 	/// node's balance type.
@@ -127,20 +127,14 @@ pub mod fee {
 		type Balance = Balance;
 
 		fn weight_to_fee(weight: &Weight) -> Self::Balance {
-			let ref_time = Balance::saturated_from(weight.ref_time());
-			let proof_size = Balance::saturated_from(weight.proof_size());
-
-			let ref_polynomial = RefTimeToFee::polynomial();
-			let proof_polynomial = ProofSizeToFee::polynomial();
+			let ref_polynomial: FeePolynomial<Balance> = RefTimeToFee::polynomial().into();
+			let proof_polynomial: FeePolynomial<Balance> = ProofSizeToFee::polynomial().into();
 
 			// Get fee amount from ref_time based on the RefTime polynomial
-			let ref_fee: Balance =
-				ref_polynomial.iter().fold(0, |acc, term| term.saturating_eval(acc, ref_time));
+			let ref_fee: Balance = ref_polynomial.eval(weight.ref_time());
 
 			// Get fee amount from proof_size based on the ProofSize polynomial
-			let proof_fee: Balance = proof_polynomial
-				.iter()
-				.fold(0, |acc, term| term.saturating_eval(acc, proof_size));
+			let proof_fee: Balance = proof_polynomial.eval(weight.proof_size());
 
 			// Take the maximum instead of the sum to charge by the more scarce resource.
 			ref_fee.max(proof_fee)
@@ -180,34 +174,6 @@ pub mod fee {
 				coeff_frac: Perbill::from_rational(p % q, q),
 				coeff_integer: p / q,
 			}]
-		}
-	}
-
-	// TODO: Refactor out this code to use `FeePolynomial` on versions using polkadot-v0.9.42 and above:
-	pub trait WeightCoefficientCalc<Balance> {
-		fn saturating_eval(&self, result: Balance, x: Balance) -> Balance;
-	}
-
-	impl<Balance> WeightCoefficientCalc<Balance> for WeightToFeeCoefficient<Balance>
-	where
-		Balance: BaseArithmetic + From<u32> + Copy + Unsigned + SaturatedConversion,
-	{
-		fn saturating_eval(&self, mut result: Balance, x: Balance) -> Balance {
-			let power = x.saturating_pow(self.degree.into());
-
-			let frac = self.coeff_frac * power; // Overflow safe since coeff_frac is strictly less than 1.
-			let integer = self.coeff_integer.saturating_mul(power);
-			// Do not add them together here to avoid an underflow.
-
-			if self.negative {
-				result = result.saturating_sub(frac);
-				result = result.saturating_sub(integer);
-			} else {
-				result = result.saturating_add(frac);
-				result = result.saturating_add(integer);
-			}
-
-			result
 		}
 	}
 }
