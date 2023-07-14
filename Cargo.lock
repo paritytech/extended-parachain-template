@@ -2201,7 +2201,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "devnet-template-runtime"
+name = "devnet-runtime"
 version = "0.1.0"
 dependencies = [
  "cumulus-pallet-aura-ext",
@@ -2240,6 +2240,7 @@ dependencies = [
  "parity-scale-codec",
  "polkadot-parachain",
  "polkadot-runtime-common",
+ "runtime-common",
  "scale-info",
  "smallvec",
  "sp-api",
@@ -2255,7 +2256,6 @@ dependencies = [
  "sp-transaction-pool",
  "sp-version",
  "substrate-wasm-builder",
- "template-common",
  "xcm",
  "xcm-builder",
  "xcm-executor",
@@ -4956,7 +4956,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mainnet-template-runtime"
+name = "mainnet-runtime"
 version = "0.1.0"
 dependencies = [
  "cumulus-pallet-aura-ext",
@@ -4995,6 +4995,7 @@ dependencies = [
  "parity-scale-codec",
  "polkadot-parachain",
  "polkadot-runtime-common",
+ "runtime-common",
  "scale-info",
  "smallvec",
  "sp-api",
@@ -5010,7 +5011,6 @@ dependencies = [
  "sp-transaction-pool",
  "sp-version",
  "substrate-wasm-builder",
- "template-common",
  "xcm",
  "xcm-builder",
  "xcm-executor",
@@ -6751,17 +6751,18 @@ dependencies = [
  "cumulus-relay-chain-interface",
  "cumulus-relay-chain-minimal-node",
  "cumulus-relay-chain-rpc-interface",
- "devnet-template-runtime",
+ "devnet-runtime",
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "jsonrpsee",
  "log",
- "mainnet-template-runtime",
+ "mainnet-runtime",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "polkadot-cli",
  "polkadot-primitives",
  "polkadot-service",
+ "runtime-common",
  "sc-basic-authorship",
  "sc-chain-spec",
  "sc-cli",
@@ -6794,7 +6795,6 @@ dependencies = [
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
  "substrate-prometheus-endpoint",
- "template-common",
  "try-runtime-cli",
  "xcm",
 ]
@@ -9130,6 +9130,19 @@ dependencies = [
  "serde",
  "thiserror",
  "webrtc-util",
+]
+
+[[package]]
+name = "runtime-common"
+version = "1.0.0"
+dependencies = [
+ "frame-support",
+ "parachains-common",
+ "parity-scale-codec",
+ "polkadot-primitives",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -11991,19 +12004,6 @@ dependencies = [
  "redox_syscall 0.3.5",
  "rustix 0.37.23",
  "windows-sys 0.48.0",
-]
-
-[[package]]
-name = "template-common"
-version = "1.0.0"
-dependencies = [
- "frame-support",
- "parachains-common",
- "parity-scale-codec",
- "polkadot-primitives",
- "scale-info",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]

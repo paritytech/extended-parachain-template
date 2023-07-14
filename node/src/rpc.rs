@@ -7,7 +7,7 @@
 
 use std::sync::Arc;
 
-use template_common::{AccountId, Balance, Block, Index as Nonce};
+use runtime_common::{AccountId, Balance, Block, Index as Nonce};
 
 use sc_client_api::AuxStore;
 pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};

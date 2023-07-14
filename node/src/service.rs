@@ -34,7 +34,7 @@ use sp_runtime::{app_crypto::AppCrypto, traits::BlakeTwo256};
 use substrate_prometheus_endpoint::Registry;
 
 // Local Runtime types
-use template_common::{AccountId, AuraId, Balance, Block, Index as Nonce};
+use runtime_common::{AccountId, AuraId, Balance, Block, Index as Nonce};
 
 /// Devnet Native executor type.
 pub struct DevnetRuntimeExecutor;
@@ -43,11 +43,11 @@ impl NativeExecutionDispatch for DevnetRuntimeExecutor {
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		devnet_template_runtime::api::dispatch(method, data)
+		devnet_runtime::api::dispatch(method, data)
 	}
 
 	fn native_version() -> sc_executor::NativeVersion {
-		devnet_template_runtime::native_version()
+		devnet_runtime::native_version()
 	}
 }
 
@@ -58,11 +58,11 @@ impl NativeExecutionDispatch for MainnetRuntimeExecutor {
 	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		mainnet_template_runtime::api::dispatch(method, data)
+		mainnet_runtime::api::dispatch(method, data)
 	}
 
 	fn native_version() -> sc_executor::NativeVersion {
-		mainnet_template_runtime::native_version()
+		mainnet_runtime::native_version()
 	}
 }
 

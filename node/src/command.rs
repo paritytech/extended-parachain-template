@@ -12,7 +12,7 @@ use sc_cli::{
 use sc_service::config::{BasePath, PrometheusConfig};
 use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
-use template_common::Block;
+use runtime_common::Block;
 
 use crate::{
 	chain_spec,
@@ -125,8 +125,8 @@ impl SubstrateCli for Cli {
 
 	fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
 		match chain_spec.runtime() {
-			Runtime::Devnet | Runtime::Default => &devnet_template_runtime::VERSION,
-			Runtime::Mainnet => &mainnet_template_runtime::VERSION,
+			Runtime::Devnet | Runtime::Default => &devnet_runtime::VERSION,
+			Runtime::Mainnet => &mainnet_runtime::VERSION,
 		}
 	}
 }
@@ -177,9 +177,9 @@ macro_rules! construct_async_run {
 		match runner.config().chain_spec.runtime() {
 			Runtime::Devnet | Runtime::Default => {
 				runner.async_run(|$config| {
-					let $components = new_partial::<devnet_template_runtime::RuntimeApi, DevnetRuntimeExecutor, _>(
+					let $components = new_partial::<devnet_runtime::RuntimeApi, DevnetRuntimeExecutor, _>(
 						&$config,
-						crate::service::build_import_queue::<devnet_template_runtime::RuntimeApi, DevnetRuntimeExecutor>,
+						crate::service::build_import_queue::<devnet_runtime::RuntimeApi, DevnetRuntimeExecutor>,
 					)?;
 					let task_manager = $components.task_manager;
 					{ $( $code )* }.map(|v| (v, task_manager))
@@ -187,9 +187,9 @@ macro_rules! construct_async_run {
 			}
 			Runtime::Mainnet => {
 				runner.async_run(|$config| {
-					let $components = new_partial::<mainnet_template_runtime::RuntimeApi, MainnetRuntimeExecutor, _>(
+					let $components = new_partial::<mainnet_runtime::RuntimeApi, MainnetRuntimeExecutor, _>(
 						&$config,
-						crate::service::build_import_queue::<mainnet_template_runtime::RuntimeApi, MainnetRuntimeExecutor>,
+						crate::service::build_import_queue::<mainnet_runtime::RuntimeApi, MainnetRuntimeExecutor>,
 					)?;
 					let task_manager = $components.task_manager;
 					{ $( $code )* }.map(|v| (v, task_manager))
@@ -204,7 +204,7 @@ macro_rules! construct_benchmark_partials {
 		match $config.chain_spec.runtime() {
 			Runtime::Devnet | Runtime::Default => {
 				let $partials =
-					new_partial::<devnet_template_runtime::RuntimeApi, DevnetRuntimeExecutor, _>(
+					new_partial::<devnet_runtime::RuntimeApi, DevnetRuntimeExecutor, _>(
 						&$config,
 						crate::service::build_import_queue::<_, DevnetRuntimeExecutor>,
 					)?;
@@ -212,7 +212,7 @@ macro_rules! construct_benchmark_partials {
 			},
 			Runtime::Mainnet => {
 				let $partials =
-					new_partial::<mainnet_template_runtime::RuntimeApi, MainnetRuntimeExecutor, _>(
+					new_partial::<mainnet_runtime::RuntimeApi, MainnetRuntimeExecutor, _>(
 						&$config,
 						crate::service::build_import_queue::<_, MainnetRuntimeExecutor>,
 					)?;
@@ -339,7 +339,7 @@ pub fn run() -> Result<()> {
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
 			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
-			use template_common::MILLISECS_PER_BLOCK;
+			use runtime_common::MILLISECS_PER_BLOCK;
 			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
 
 			let runner = cli.create_runner(cmd)?;
@@ -429,8 +429,8 @@ pub fn run() -> Result<()> {
 						// you are required to call this function with your desired prefix [Ss58AddressFormat::custom].
 						// This will enable the node to decode ss58 addresses with this prefix.
 						// This SS58 version/format is also only used by the node and not by the runtime.
-						sp_core::crypto::set_default_ss58_version(devnet_template_runtime::SS58Prefix::get().into());
-						crate::service::start_parachain_node::<devnet_template_runtime::RuntimeApi, DevnetRuntimeExecutor>
+						sp_core::crypto::set_default_ss58_version(devnet_runtime::SS58Prefix::get().into());
+						crate::service::start_parachain_node::<devnet_runtime::RuntimeApi, DevnetRuntimeExecutor>
 							(config, polkadot_config, collator_options, id, hwbench)
 							.await
 							.map(|r| r.0)
@@ -438,8 +438,8 @@ pub fn run() -> Result<()> {
 
 					}
 					Runtime::Mainnet => {
-						sp_core::crypto::set_default_ss58_version(mainnet_template_runtime::SS58Prefix::get().into());
-						crate::service::start_parachain_node::<mainnet_template_runtime::RuntimeApi, MainnetRuntimeExecutor>
+						sp_core::crypto::set_default_ss58_version(mainnet_runtime::SS58Prefix::get().into());
+						crate::service::start_parachain_node::<mainnet_runtime::RuntimeApi, MainnetRuntimeExecutor>
 							(config, polkadot_config, collator_options, id, hwbench)
 							.await
 							.map(|r| r.0)

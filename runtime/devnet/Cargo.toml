@@ -1,5 +1,5 @@
 [package]
-name = "devnet-template-runtime"
+name = "devnet-runtime"
 version = "0.1.0"
 authors = ["Anonymous"]
 description = "A Cumulus FRAME-based Substrate Runtime, ready for hacking together a parachain."
@@ -23,7 +23,7 @@ smallvec = "1.10.0"
 
 # Local
 pallet-motion = { path = "../../pallets/motion", default-features = false }
-template-common = {path = "../common", default-features = false}
+runtime-common = {path = "../common", default-features = false}
 
 # Substrate
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true, branch = "polkadot-v0.9.42" }
