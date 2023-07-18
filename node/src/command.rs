@@ -5,6 +5,7 @@ use cumulus_client_cli::generate_genesis_block;
 use cumulus_primitives_core::ParaId;
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use log::{info, warn};
+use runtime_common::Block;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
 	NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
@@ -12,7 +13,6 @@ use sc_cli::{
 use sc_service::config::{BasePath, PrometheusConfig};
 use sp_core::hexdisplay::HexDisplay;
 use sp_runtime::traits::{AccountIdConversion, Block as BlockT};
-use runtime_common::Block;
 
 use crate::{
 	chain_spec,
@@ -203,11 +203,10 @@ macro_rules! construct_benchmark_partials {
 	($config:expr, |$partials:ident| $code:expr) => {
 		match $config.chain_spec.runtime() {
 			Runtime::Devnet | Runtime::Default => {
-				let $partials =
-					new_partial::<devnet_runtime::RuntimeApi, DevnetRuntimeExecutor, _>(
-						&$config,
-						crate::service::build_import_queue::<_, DevnetRuntimeExecutor>,
-					)?;
+				let $partials = new_partial::<devnet_runtime::RuntimeApi, DevnetRuntimeExecutor, _>(
+					&$config,
+					crate::service::build_import_queue::<_, DevnetRuntimeExecutor>,
+				)?;
 				$code
 			},
 			Runtime::Mainnet => {
@@ -338,8 +337,8 @@ pub fn run() -> Result<()> {
 		},
 		#[cfg(feature = "try-runtime")]
 		Some(Subcommand::TryRuntime(cmd)) => {
-			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
 			use runtime_common::MILLISECS_PER_BLOCK;
+			use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
 			use try_runtime_cli::block_building_info::timestamp_with_aura_info;
 
 			let runner = cli.create_runner(cmd)?;

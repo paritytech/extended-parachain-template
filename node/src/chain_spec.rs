@@ -1,18 +1,16 @@
 use cumulus_primitives_core::ParaId;
+use runtime_common::{AccountId, AuraId, Signature};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_core::{sr25519, Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
-use runtime_common::{AccountId, AuraId, Signature};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
-pub type MainChainSpec =
-	sc_service::GenericChainSpec<mainnet_runtime::GenesisConfig, Extensions>;
+pub type MainChainSpec = sc_service::GenericChainSpec<mainnet_runtime::GenesisConfig, Extensions>;
 
 /// Specialized `ChainSpec` for the development parachain runtime.
-pub type DevnetChainSpec =
-	sc_service::GenericChainSpec<devnet_runtime::GenesisConfig, Extensions>;
+pub type DevnetChainSpec = sc_service::GenericChainSpec<devnet_runtime::GenesisConfig, Extensions>;
 
 /// The default XCM version to set in genesis config.
 const SAFE_XCM_VERSION: u32 = xcm::prelude::XCM_VERSION;
@@ -255,7 +253,9 @@ pub mod devnet {
 				members: endowed_accounts.iter().take(4).cloned().collect(),
 			},
 			parachain_system: Default::default(),
-			polkadot_xcm: devnet_runtime::PolkadotXcmConfig { safe_xcm_version: Some(SAFE_XCM_VERSION) },
+			polkadot_xcm: devnet_runtime::PolkadotXcmConfig {
+				safe_xcm_version: Some(SAFE_XCM_VERSION),
+			},
 			transaction_payment: Default::default(),
 		}
 	}
