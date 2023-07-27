@@ -1,4 +1,4 @@
-name: Testing and Linter
+name: Build, test and lint
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    name: "Test and Lint"
+    name: "Build"
     runs-on: ubuntu-latest
     steps:
       - name: Free up space on runner
@@ -53,7 +53,7 @@ jobs:
           cargo check --release
 
       - name: Run tests
-        run: cargo test --locked --verbose --all
+        run: cargo test --release --locked --verbose --all
 
       - name: Check try-runtime build
         run: cargo check --release --features=try-runtime
