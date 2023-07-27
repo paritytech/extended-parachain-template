@@ -1,4 +1,4 @@
-name: Testing and Linter
+name: Build, test and lint
 
 on:
   push:
@@ -9,11 +9,16 @@ on:
 
 jobs:
   build:
-    name: "Test and Lint"
+    name: "Build"
     runs-on: ubuntu-latest
-    env:
-      NIGHTLY: nightly-2022-11-02 # Fix version to prevent cache misses with nightly changes
     steps:
+      - name: Free up space on runner
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
       - name: Rust Setup
         uses: actions-rs/toolchain@v1
         with:
@@ -22,13 +27,6 @@ jobs:
           target: wasm32-unknown-unknown
           override: true
           components: rustfmt, clippy
-
-      - name: Install Nightly
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ env.NIGHTLY }}
-          target: wasm32-unknown-unknown
 
       - name: Install protoc
         run: |
@@ -44,12 +42,21 @@ jobs:
           command: fmt
           args: --all --check
       
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2.5.0
+        with:
+            cache-on-failure: true
+            cache-all-crates: true
+  
       - name: Check Build
         run: |
-          SKIP_WASM_BUILD=1 cargo check --release
+          cargo check --release
 
       - name: Run tests
-        run: cargo test --locked --verbose --all
+        run: cargo test --release --locked --verbose --all
+
+      - name: Check try-runtime build
+        run: cargo check --release --features=try-runtime
       
       - name: Ensure benchmarking compiles
         run: >

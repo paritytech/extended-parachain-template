@@ -199,8 +199,8 @@ fn testnet_genesis(
 		// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
 		assets: parachain_template_runtime::AssetsConfig {
 			assets: vec![
-				(1, alice.into(), true, 10_000_000_0000),
-				(2, bob.into(), true, 10_000_000_0000),
+				(1, alice.into(), true, 100_000_000_000),
+				(2, bob.into(), true, 100_000_000_000),
 			],
 			// Genesis metadata: Vec<(id, name, symbol, decimals)>
 			metadata: vec![
@@ -208,7 +208,7 @@ fn testnet_genesis(
 				(2, "asset-2".into(), "ALT2".into(), 10),
 			],
 			// Genesis accounts: Vec<(id, account_id, balance)>
-			accounts: vec![(1, alice.into(), 50_000_000_0000), (2, bob.into(), 50_000_000_0000)],
+			accounts: vec![(1, alice.into(), 500_000_000_000), (2, bob.into(), 500_000_000_000)],
 		},
 		parachain_info: parachain_template_runtime::ParachainInfoConfig { parachain_id: id },
 		collator_selection: parachain_template_runtime::CollatorSelectionConfig {
@@ -235,11 +235,7 @@ fn testnet_genesis(
 		sudo: parachain_template_runtime::SudoConfig { key: root_key },
 		council: parachain_template_runtime::CouncilConfig {
 			phantom: std::marker::PhantomData,
-			members: endowed_accounts
-				.iter()
-				.enumerate()
-				.filter_map(|(idx, acc)| if idx % 2 == 0 { Some(acc.clone()) } else { None })
-				.collect::<Vec<_>>(),
+			members: endowed_accounts.iter().take(4).map(|acc| acc.clone()).collect::<Vec<_>>(),
 		},
 		parachain_system: Default::default(),
 		polkadot_xcm: parachain_template_runtime::PolkadotXcmConfig {
