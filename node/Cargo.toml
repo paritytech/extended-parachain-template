@@ -18,7 +18,9 @@ serde = {version = "1.0.160", features = ["derive"]}
 color-print = "0.3.4"
 
 # Local
-parachain-template-runtime = {path = "../runtime"}
+devnet-runtime = {path = "../runtime/devnet"}
+mainnet-runtime = {path = "../runtime/mainnet"}
+runtime-common = {path = "../runtime/common"}
 
 # Substrate
 frame-benchmarking = {git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42"}
@@ -49,6 +51,7 @@ sp-keystore = {git = "https://github.com/paritytech/substrate", branch = "polkad
 sp-offchain = {git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42"}
 sp-runtime = {git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42"}
 sp-session = {git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42"}
+sp-serializer = {git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42"}
 sp-timestamp = {git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42"}
 sp-transaction-pool = {git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42"}
 substrate-frame-rpc-system = {git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.42"}
@@ -80,11 +83,13 @@ substrate-build-script-utils = {git = "https://github.com/paritytech/substrate",
 default = []
 runtime-benchmarks = [
   "try-runtime-cli/try-runtime",
-  "parachain-template-runtime/runtime-benchmarks",
+  "mainnet-runtime/runtime-benchmarks",
+  "devnet-runtime/runtime-benchmarks",
   "polkadot-cli/runtime-benchmarks",
 ]
 try-runtime = [
   "try-runtime-cli/try-runtime",
-  "parachain-template-runtime/try-runtime",
+  "mainnet-runtime/try-runtime",
+  "devnet-runtime/try-runtime",
   "dep:sp-io",
 ]
