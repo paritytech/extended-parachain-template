@@ -497,6 +497,7 @@ impl pallet_motion::Config for Runtime {
 		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>;
 	type UnanimousOrigin =
 		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 1>;
+	type WeightInfo = pallet_motion::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_aura::Config for Runtime {
