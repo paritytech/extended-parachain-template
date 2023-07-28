@@ -176,7 +176,7 @@ pub mod devnet {
 			// Telemetry
 			None,
 			// Protocol ID
-			Some("template-local"),
+			Some("devnet-local"),
 			// Fork ID
 			None,
 			// Properties
@@ -368,7 +368,7 @@ pub mod mainnet {
 			// Telemetry
 			None,
 			// Protocol ID
-			Some("template-local"),
+			Some("mainnet-local"),
 			// Fork ID
 			None,
 			// Properties

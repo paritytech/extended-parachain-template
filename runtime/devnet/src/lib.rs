@@ -202,8 +202,8 @@ impl_opaque_keys! {
 
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("template-devnet"),
-	impl_name: create_runtime_str!("template-devnet"),
+	spec_name: create_runtime_str!("devnet"),
+	impl_name: create_runtime_str!("devnet"),
 	authoring_version: 1,
 	spec_version: 1000,
 	impl_version: 0,
