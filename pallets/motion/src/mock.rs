@@ -107,6 +107,7 @@ impl pallet_motion::Config for Test {
 	type SuperMajorityOrigin =
 		pallet_collective::EnsureProportionAtLeast<u64, CouncilCollective, 2, 3>;
 	type UnanimousOrigin = pallet_collective::EnsureProportionAtLeast<u64, CouncilCollective, 1, 1>;
+	type WeightInfo = ();
 }
 
 // Build genesis storage according to the mock runtime.
