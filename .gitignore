@@ -22,3 +22,7 @@
 
 # node binaries
 bin/*
+
+# zombienet binaries
+zombienet-macos
+zombient-linux-x64
