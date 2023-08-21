@@ -7,12 +7,12 @@
 
 use std::sync::Arc;
 
-use runtime_common::{AccountId, Balance, Block, Index as Nonce};
+use runtime_common::{AccountId, Balance, Block, Nonce};
 
 use sc_client_api::AuxStore;
 pub use sc_rpc::{DenyUnsafe, SubscriptionTaskExecutor};
 use sc_transaction_pool_api::TransactionPool;
-use sp_api::ProvideRuntimeApi;
+use sp_api::{CallApiAt, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
@@ -41,6 +41,7 @@ where
 		+ Send
 		+ Sync
 		+ 'static,
+	C: CallApiAt<Block>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	C::Api: BlockBuilder<Block>,

@@ -3,6 +3,8 @@
 // std
 use std::{sync::Arc, time::Duration};
 
+use futures::FutureExt;
+
 // Cumulus Imports
 use cumulus_client_cli::CollatorOptions;
 use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, SlotProportion};
@@ -18,6 +20,7 @@ use cumulus_relay_chain_interface::RelayChainInterface;
 
 // Substrate Imports
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
+use sc_client_api::Backend;
 use sc_consensus::ImportQueue;
 use sc_executor::{
 	HeapAllocStrategy, NativeElseWasmExecutor, NativeExecutionDispatch, WasmExecutor,
@@ -27,6 +30,7 @@ use sc_network::NetworkBlock;
 use sc_network_sync::SyncingService;
 use sc_service::{Configuration, PartialComponents, TFullBackend, TFullClient, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker, TelemetryWorkerHandle};
+use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_api::ConstructRuntimeApi;
 use sp_core::Pair;
 use sp_keystore::KeystorePtr;
@@ -34,7 +38,7 @@ use sp_runtime::{app_crypto::AppCrypto, traits::BlakeTwo256};
 use substrate_prometheus_endpoint::Registry;
 
 // Local Runtime types
-use runtime_common::{AccountId, AuraId, Balance, Block, Index as Nonce};
+use runtime_common::{AccountId, AuraId, Balance, Block, Nonce};
 
 /// Devnet Native executor type.
 pub struct DevnetRuntimeExecutor;
@@ -292,11 +296,23 @@ where
 		.await?;
 
 	if parachain_config.offchain_worker.enabled {
-		sc_service::build_offchain_workers(
-			&parachain_config,
-			task_manager.spawn_handle(),
-			client.clone(),
-			network.clone(),
+		task_manager.spawn_handle().spawn(
+			"offchain-workers-runner",
+			"offchain-worker",
+			sc_offchain::OffchainWorkers::new(sc_offchain::OffchainWorkerOptions {
+				runtime_api_provider: client.clone(),
+				is_validator: parachain_config.role.is_authority(),
+				keystore: None,
+				offchain_db: backend.offchain_storage(),
+				transaction_pool: Some(OffchainTransactionPoolFactory::new(
+					transaction_pool.clone(),
+				)),
+				network_provider: network.clone(),
+				enable_http_requests: true,
+				custom_extensions: |_| vec![],
+			})
+			.run(client.clone(), task_manager.spawn_handle())
+			.boxed(),
 		);
 	}
 

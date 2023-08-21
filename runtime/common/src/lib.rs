@@ -7,8 +7,11 @@ use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight};
 // These types are shared between the mainnet and devnet runtimes
 //https://github.com/paritytech/cumulus/tree/master/parachains/common
 pub use parachains_common::{
-	impls::DealWithFees, AccountId, AuraId, Balance, Block, BlockNumber, Hash, Index, Signature,
+	impls::DealWithFees, AccountId, AuraId, Balance, Block, BlockNumber, Hash, Signature,
 };
+
+/// Nonce for an account
+pub type Nonce = u32;
 
 /// This determines the average expected block time that we are targeting.
 /// Blocks will be produced at a minimum duration defined by `SLOT_DURATION`.
@@ -38,5 +41,5 @@ pub const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We allow for 0.5 of a second of compute with a 12 second average block time.
 pub const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
 	WEIGHT_REF_TIME_PER_SECOND.saturating_div(2),
-	polkadot_primitives::v4::MAX_POV_SIZE as u64,
+	polkadot_primitives::MAX_POV_SIZE as u64,
 );
