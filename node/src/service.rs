@@ -3,8 +3,6 @@
 // std
 use std::{sync::Arc, time::Duration};
 
-use futures::FutureExt;
-
 // Cumulus Imports
 use cumulus_client_cli::CollatorOptions;
 use cumulus_client_consensus_aura::{AuraConsensus, BuildAuraConsensusParams, SlotProportion};
@@ -296,20 +294,22 @@ where
 		.await?;
 
 	if parachain_config.offchain_worker.enabled {
+		use futures::FutureExt;
+
 		task_manager.spawn_handle().spawn(
 			"offchain-workers-runner",
-			"offchain-worker",
+			"offchain-work",
 			sc_offchain::OffchainWorkers::new(sc_offchain::OffchainWorkerOptions {
 				runtime_api_provider: client.clone(),
-				is_validator: parachain_config.role.is_authority(),
-				keystore: None,
+				keystore: Some(params.keystore_container.keystore()),
 				offchain_db: backend.offchain_storage(),
 				transaction_pool: Some(OffchainTransactionPoolFactory::new(
 					transaction_pool.clone(),
 				)),
 				network_provider: network.clone(),
-				enable_http_requests: true,
-				custom_extensions: |_| vec![],
+				is_validator: parachain_config.role.is_authority(),
+				enable_http_requests: false,
+				custom_extensions: move |_| vec![],
 			})
 			.run(client.clone(), task_manager.spawn_handle())
 			.boxed(),
