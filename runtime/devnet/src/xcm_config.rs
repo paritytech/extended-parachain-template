@@ -18,8 +18,10 @@ use xcm_builder::{
 	CreateMatcher, CurrencyAdapter, EnsureXcmOrigin, FixedWeightBounds, IsConcrete, MatchXcm,
 	NativeAsset, ParentIsPreset, RelayChainAsNative, SiblingParachainAsNative,
 	SiblingParachainConvertsVia, SignedAccountId32AsNative, SignedToAccountId32,
-	SovereignSignedViaLocation, TakeWeightCredit, UsingComponents, WithComputedOrigin,
+	SovereignSignedViaLocation, TakeWeightCredit, TrailingSetTopicAsId, UsingComponents,
+	WithComputedOrigin, WithUniqueTopic,
 };
+use xcm_executor::traits::Properties;
 use xcm_executor::{traits::ShouldExecute, XcmExecutor};
 
 parameter_types! {
@@ -105,12 +107,12 @@ where
 {
 	fn should_execute<RuntimeCall>(
 		origin: &MultiLocation,
-		message: &mut [Instruction<RuntimeCall>],
+		instructions: &mut [Instruction<RuntimeCall>],
 		max_weight: Weight,
-		weight_credit: &mut Weight,
+		properties: &mut Properties,
 	) -> Result<(), ProcessMessageError> {
-		Deny::should_execute(origin, message, max_weight, weight_credit)?;
-		Allow::should_execute(origin, message, max_weight, weight_credit)
+		Deny::should_execute(origin, instructions, max_weight, properties)?;
+		Allow::should_execute(origin, instructions, max_weight, properties)
 	}
 }
 
@@ -119,11 +121,11 @@ pub struct DenyReserveTransferToRelayChain;
 impl ShouldExecute for DenyReserveTransferToRelayChain {
 	fn should_execute<RuntimeCall>(
 		origin: &MultiLocation,
-		message: &mut [Instruction<RuntimeCall>],
+		instructions: &mut [Instruction<RuntimeCall>],
 		_max_weight: Weight,
-		_weight_credit: &mut Weight,
+		_properties: &mut Properties,
 	) -> Result<(), ProcessMessageError> {
-		message.matcher().match_next_inst_while(
+		instructions.matcher().match_next_inst_while(
 			|_| true,
 			|inst| match inst {
 				InitiateReserveWithdraw {
@@ -158,20 +160,22 @@ impl ShouldExecute for DenyReserveTransferToRelayChain {
 	}
 }
 
-pub type Barrier = DenyThenTry<
-	DenyReserveTransferToRelayChain,
-	(
-		TakeWeightCredit,
-		WithComputedOrigin<
-			(
-				AllowTopLevelPaidExecutionFrom<Everything>,
-				AllowExplicitUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
-				// ^^^ Parent and its exec plurality get free execution
-			),
-			UniversalLocation,
-			ConstU32<8>,
-		>,
-	),
+pub type Barrier = TrailingSetTopicAsId<
+	DenyThenTry<
+		DenyReserveTransferToRelayChain,
+		(
+			TakeWeightCredit,
+			WithComputedOrigin<
+				(
+					AllowTopLevelPaidExecutionFrom<Everything>,
+					AllowExplicitUnpaidExecutionFrom<ParentOrParentsExecutivePlurality>,
+					// ^^^ Parent and its exec plurality get free execution
+				),
+				UniversalLocation,
+				ConstU32<8>,
+			>,
+		),
+	>,
 >;
 
 pub struct XcmConfig;
@@ -182,7 +186,9 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetTransactor = LocalAssetTransactor;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	type IsReserve = NativeAsset;
-	type IsTeleporter = (); // Teleporting is disabled.
+	type IsTeleporter = ();
+	type Aliasers = Nothing;
+	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
@@ -190,12 +196,12 @@ impl xcm_executor::Config for XcmConfig {
 		UsingComponents<WeightToFee, RelayLocation, AccountId, Balances, ToAuthor<Runtime>>;
 	type ResponseHandler = PolkadotXcm;
 	type AssetTrap = PolkadotXcm;
+	type AssetLocker = ();
+	type AssetExchanger = ();
 	type AssetClaims = PolkadotXcm;
 	type SubscriptionService = PolkadotXcm;
 	type PalletInstancesInfo = AllPalletsWithSystem;
 	type MaxAssetsIntoHolding = MaxAssetsIntoHolding;
-	type AssetLocker = ();
-	type AssetExchanger = ();
 	type FeeManager = ();
 	type MessageExporter = ();
 	type UniversalAliases = Nothing;
@@ -208,12 +214,12 @@ pub type LocalOriginToLocation = SignedToAccountId32<RuntimeOrigin, AccountId, R
 
 /// The means for routing XCM messages which are not for local execution into the right message
 /// queues.
-pub type XcmRouter = (
+pub type XcmRouter = WithUniqueTopic<(
 	// Two routers - use UMP to communicate with the relay chain:
 	cumulus_primitives_utility::ParentAsUmp<ParachainSystem, (), ()>,
 	// ..and XCMP to communicate with the sibling chains.
 	XcmpQueue,
-);
+)>;
 
 #[cfg(feature = "runtime-benchmarks")]
 parameter_types! {

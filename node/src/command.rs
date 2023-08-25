@@ -8,7 +8,7 @@ use log::{info, warn};
 use runtime_common::Block;
 use sc_cli::{
 	ChainSpec, CliConfiguration, DefaultConfigurationValues, ImportParams, KeystoreParams,
-	NetworkParams, Result, RuntimeVersion, SharedParams, SubstrateCli,
+	NetworkParams, Result, SharedParams, SubstrateCli,
 };
 use sc_service::config::{BasePath, PrometheusConfig};
 use sp_core::hexdisplay::HexDisplay;
@@ -121,13 +121,6 @@ impl SubstrateCli for Cli {
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		load_spec(id)
 	}
-
-	fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		match chain_spec.runtime() {
-			Runtime::Devnet | Runtime::Default => &devnet_runtime::VERSION,
-			Runtime::Mainnet => &mainnet_runtime::VERSION,
-		}
-	}
 }
 
 impl SubstrateCli for RelayChainCli {
@@ -163,10 +156,6 @@ impl SubstrateCli for RelayChainCli {
 
 	fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn sc_service::ChainSpec>, String> {
 		polkadot_cli::Cli::from_iter([RelayChainCli::executable_name()].iter()).load_spec(id)
-	}
-
-	fn native_runtime_version(chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		polkadot_cli::Cli::native_runtime_version(chain_spec)
 	}
 }
 
@@ -274,11 +263,9 @@ pub fn run() -> Result<()> {
 			})
 		},
 		Some(Subcommand::ExportGenesisState(cmd)) => {
-			let runner = cli.create_runner(cmd)?;
-			runner.sync_run(|_config| {
+			construct_async_run!(|components, cli, cmd, config| {
 				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
-				let state_version = Cli::native_runtime_version(&spec).state_version();
-				cmd.run::<Block>(&*spec, state_version)
+				Ok(async move { cmd.run::<Block>(&*spec, &*components.client) })
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
@@ -294,12 +281,7 @@ pub fn run() -> Result<()> {
 			match cmd {
 				BenchmarkCmd::Pallet(cmd) => {
 					if cfg!(feature = "runtime-benchmarks") {
-						runner.sync_run(|config| match config.chain_spec.runtime() {
-							Runtime::Devnet | Runtime::Default => {
-								cmd.run::<Block, DevnetRuntimeExecutor>(config)
-							},
-							Runtime::Mainnet => cmd.run::<Block, MainnetRuntimeExecutor>(config),
-						})
+						runner.sync_run(|config| cmd.run::<Block, ()>(config))
 					} else {
 						Err("Benchmarking wasn't enabled when building the node. \
 					You can enable it with `--features runtime-benchmarks`."
@@ -403,8 +385,7 @@ pub fn run() -> Result<()> {
 				let parachain_account =
 					AccountIdConversion::<polkadot_primitives::AccountId>::into_account_truncating(&id);
 
-				let state_version = Cli::native_runtime_version(&config.chain_spec).state_version();
-				let block: Block = generate_genesis_block(&*config.chain_spec, state_version)
+				let block: Block = generate_genesis_block(&*config.chain_spec, sp_runtime::StateVersion::V1)
 					.map_err(|e| format!("{:?}", e))?;
 				let genesis_state = format!("0x{:?}", HexDisplay::from(&block.header().encode()));
 
@@ -423,7 +404,7 @@ pub fn run() -> Result<()> {
 				}
 				match config.chain_spec.runtime() {
 					Runtime::Default | Runtime::Devnet => {
-						// If you want to support a custom SS58 prefix (that isn’t yet registered in the ss58-registry), 
+						// If you want to support a custom SS58 prefix (that isn’t yet registered in the ss58-registry),
 						// you are required to call this function with your desired prefix [Ss58AddressFormat::custom].
 						// This will enable the node to decode ss58 addresses with this prefix.
 						// This SS58 version/format is also only used by the node and not by the runtime.
