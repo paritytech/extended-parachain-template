@@ -502,6 +502,23 @@ impl pallet_motion::Config for Runtime {
 	type WeightInfo = pallet_motion::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
+	pub const DepositBase: Balance = deposit(1, 88);
+	// Additional storage item size of 32 bytes.
+	pub const DepositFactor: Balance = deposit(0, 32);
+}
+
+impl pallet_multisig::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type Currency = Balances;
+	type DepositBase = DepositBase;
+	type DepositFactor = DepositFactor;
+	type MaxSignatories = ConstU32<100>;
+	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
+}
+
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type MaxAuthorities = ConstU32<100_000>;
@@ -552,6 +569,7 @@ construct_runtime!(
 
 		// Utility
 		Utility: pallet_utility = 4,
+		Multisig: pallet_multisig = 5,
 
 		// Monetary stuff.
 		Balances: pallet_balances = 10,
@@ -587,6 +605,7 @@ mod benches {
 		[pallet_session, SessionBench::<Runtime>]
 		[pallet_timestamp, Timestamp]
 		[pallet_collator_selection, CollatorSelection]
+		[pallet_multisig, Multisig]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 	);
 }
