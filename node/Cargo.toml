@@ -11,11 +11,11 @@ version = "1.0.0"
 
 [dependencies]
 clap = { workspace = true }
-codec = { workspace = true }
 color-print = { workspace = true }
 futures = { workspace = true }
 jsonrpsee = { workspace = true }
 log = { workspace = true }
+parity-scale-codec = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 

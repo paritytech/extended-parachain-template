@@ -1,11 +1,11 @@
 use super::*;
 use crate as pallet_motion;
 use crate::{mock::*, Event as MotionEvent};
-use codec::Encode;
 use frame_support::{assert_ok, dispatch::GetDispatchInfo, weights::Weight};
 use frame_system::{EventRecord, Phase};
 use mock::{RuntimeCall, RuntimeEvent};
 use pallet_collective::Event as CollectiveEvent;
+use parity_scale_codec::Encode;
 use sp_core::H256;
 use sp_runtime::traits::{BlakeTwo256, Hash};
 
