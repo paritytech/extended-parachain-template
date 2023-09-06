@@ -364,7 +364,7 @@ impl pallet_assets::Config for Runtime {
 	type Balance = Balance;
 	type RemoveItemsLimit = ConstU32<1000>;
 	type AssetId = u32;
-	type AssetIdParameter = parity_scale_codec::Compact<u32>;
+	type AssetIdParameter = codec::Compact<u32>;
 	type Currency = Balances;
 	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
 	type ForceOrigin = EnsureRoot<AccountId>;

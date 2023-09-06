@@ -20,23 +20,23 @@ repository = "https://github.com/paritytech/extended-parachain-template/"
 [workspace.dependencies]
 
 # Common
-clap = {version = "4.3.24", features = ["derive"]}
+clap = { version = "4.3.24", features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
 color-print = "0.3.4"
 futures = "0.3.28"
-hex-literal = {version = "0.4.1"}
-jsonrpsee = {version = "0.16.2", features = ["server"]}
-log = {version = "0.4.20", default-features = false }
-parity-scale-codec = {version = "3.2.2", default-features = false, features = ["derive"]}
-scale-info = {version = "2.9.0", default-features = false }
-serde = {version = "1.0.183", features = ["derive"]}
+hex-literal = { version = "0.4.1" }
+jsonrpsee = { version = "0.16.2", features = ["server"] }
+log = { version = "0.4.20", default-features = false }
+scale-info = { version = "2.9.0", default-features = false }
+serde = { version = "1.0.183", features = ["derive"] }
 serde_json = "1.0.85"
 smallvec = "1.11.0"
 
 # Local dependencies
-devnet-runtime = {path = "runtime/devnet"}
-mainnet-runtime = {path = "runtime/mainnet"}
-pallet-motion = {path = "pallets/motion", default-features = false }
-runtime-common = {path = "runtime/common", default-features = false }
+devnet-runtime = { path = "runtime/devnet" }
+mainnet-runtime = { path = "runtime/mainnet" }
+pallet-motion = { path = "pallets/motion", default-features = false }
+runtime-common = { path = "runtime/common", default-features = false }
 
 # Substrate
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
