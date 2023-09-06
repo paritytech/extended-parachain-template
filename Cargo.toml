@@ -8,6 +8,7 @@ members = [
   "runtime/mainnet",
   "runtime/devnet",
 ]
+resolver = "2"
 
 [workspace.package]
 authors = ["Anonymous"]
