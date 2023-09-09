@@ -310,7 +310,6 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
-					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
 					PARA_ID.into(),
 				)
 			},
@@ -366,7 +365,6 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
-					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
 					PARA_ID.into(),
 				)
 			},
@@ -391,12 +389,20 @@ pub mod mainnet {
 	fn mainnet_genesis(
 		invulnerables: Vec<(AccountId, AuraId)>,
 		endowed_accounts: Vec<AccountId>,
-		root_key: Option<AccountId>,
 		id: ParaId,
 	) -> mainnet_runtime::RuntimeGenesisConfig {
-		use mainnet_runtime::EXISTENTIAL_DEPOSIT;
+		use mainnet_runtime::{Runtime, EXISTENTIAL_DEPOSIT};
+
 		let alice = get_from_seed::<sr25519::Public>("Alice");
 		let bob = get_from_seed::<sr25519::Public>("Bob");
+
+		let mut sudo_authority =
+			invulnerables.iter().cloned().take(3).map(|(acc, _)| acc).collect::<Vec<_>>();
+		sudo_authority.sort();
+
+		// Define a multisig threshold for 2/3 members
+		let multisig_sudo =
+			pallet_multisig::Pallet::<Runtime>::multi_account_id(&sudo_authority[..], 2);
 
 		mainnet_runtime::RuntimeGenesisConfig {
 			system: mainnet_runtime::SystemConfig {
@@ -450,7 +456,7 @@ pub mod mainnet {
 			// of this.
 			aura: Default::default(),
 			aura_ext: Default::default(),
-			sudo: mainnet_runtime::SudoConfig { key: root_key },
+			sudo: mainnet_runtime::SudoConfig { key: Some(multisig_sudo) },
 			council: mainnet_runtime::CouncilConfig {
 				phantom: std::marker::PhantomData,
 				members: endowed_accounts.iter().take(4).cloned().collect(),
