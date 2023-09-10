@@ -12,7 +12,7 @@ As an example the mainnet comes configured with a 3-account multisig for the sud
 
 ### Governance in Production: 
 
-The first iterations of polkadot started with `pallet-sudo` and when the network operations were recognized as stable, it was removed in favor of a democracy based governance model comprising of a `pallet-collective` instances like `Council` and `TechnicalCommittee`, `pallet-democracy` to dispatch privileged calls, and `pallet-membership`. You can read more about them on the [polkadot wiki (Governance v1)](https://wiki.polkadot.network/docs/learn-governance).
+The first iterations of polkadot started with `pallet-sudo` and when the network operations were recognized as stable, it was removed in favor of a democracy based governance model comprising of `pallet-collective` instances like `Council` and `TechnicalCommittee`, `pallet-democracy` to dispatch privileged calls, and `pallet-membership`. You can read more about them on the [polkadot wiki (Governance v1)](https://wiki.polkadot.network/docs/learn-governance).
 
 As you might guess, the above setup is not trivial for small networks who are trying out governance models to develop a mental model of how things work on non-sudo land. 
 
@@ -20,5 +20,5 @@ As you might guess, the above setup is not trivial for small networks who are tr
 
 We developed `pallet-motion` as a means to simplify `Council` based voting on proposals (privileged calls), by directly enabling `pallet-collective` instances, henceforth referred to as `Council`, to dispatch with the `Root` origin. [Read about pallet-motion extrinsics here.](../pallets/motion/README.md)
 
-As a next step towards production readyness, a team might want to perform a runtime upgrade where they remove `pallet-sudo`, have `Council` instances in their runtime, and try making privleged calls through one of the three provided origins by `pallet-motion`. 
+As a next step towards production readyness, a team might want to perform a runtime upgrade where they remove `pallet-sudo`, have `Council` instances in their runtime, and try making privileged calls through one of the three provided origins by `pallet-motion`. 
 
