@@ -17,7 +17,7 @@ substrate-wasm-builder = { workspace = true, optional = true }
 [dependencies]
 hex-literal = { workspace = true, optional = true }
 log = { workspace = true, default-features = false }
-parity-scale-codec = { workspace = true, default-features = false, features = ["derive"] }
+codec = { package = "parity-scale-codec", workspace = true, default-features = false, features = ["derive"] }
 scale-info = { workspace = true, default-features = false, features = ["derive"] }
 smallvec = { workspace = true }
 
@@ -84,7 +84,7 @@ parachain-info = { workspace = true, default-features = false }
 [features]
 default = ["std"]
 std = [
-	"parity-scale-codec/std",
+	"codec/std",
 	"log/std",
 	"scale-info/std",
 	"assets-common/std",
