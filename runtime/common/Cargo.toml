@@ -1,32 +1,29 @@
 [package]
-authors = ["Anonymous"]
+authors = { workspace = true }
 description = "Runtime Common"
-edition = "2021"
-license = "Unlicense"
+edition = { workspace = true }
+license = { workspace = true }
 name = "runtime-common"
-repository = "https://github.com/paritytech/extended-parachain-template"
+repository = { workspace = true }
 version = "1.0.0"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
 
-
 [dependencies]
-codec = {package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"]}
-scale-info = {version = "2.9.0", default-features = false, features = ["derive"]}
+parity-scale-codec = { workspace = true, default-features = false, features = ["derive"] }
+scale-info = { workspace = true, default-features = false, features = ["derive"] }
 
 # Substrate
-frame-support = {git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0"}
-sp-runtime = {git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0"}
-sp-std = {git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0"}
+frame-support = { workspace = true, default-features = false }
+sp-runtime = { workspace = true, default-features = false }
+sp-std = { workspace = true, default-features = false }
 
-parachains-common = {git = "https://github.com/paritytech/cumulus", branch = "polkadot-v1.0.0", default-features = false}
-polkadot-primitives = {git = "https://github.com/paritytech/polkadot", branch = "release-v1.0.0", default-features = false}
+parachains-common = { workspace = true, default-features = false }
+polkadot-primitives = { workspace = true, default-features = false }
 
 [features]
-default = [
-  "std",
-]
+default = ["std"]
 std = [
   "frame-support/std",
   "sp-runtime/std",
