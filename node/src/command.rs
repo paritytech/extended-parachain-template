@@ -263,9 +263,13 @@ pub fn run() -> Result<()> {
 			})
 		},
 		Some(Subcommand::ExportGenesisState(cmd)) => {
-			construct_async_run!(|components, cli, cmd, config| {
-				let spec = cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
-				Ok(async move { cmd.run::<Block>(&*spec, &*components.client) })
+			let runner = cli.create_runner(cmd)?;
+			runner.sync_run(|config| {
+				construct_benchmark_partials!(config, |partials| {
+					let spec =
+						cli.load_spec(&cmd.shared_params.chain.clone().unwrap_or_default())?;
+					cmd.run::<Block>(&*spec, &*partials.client)
+				})
 			})
 		},
 		Some(Subcommand::ExportGenesisWasm(cmd)) => {
