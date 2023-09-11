@@ -11,7 +11,7 @@ version = "1.0.0"
 
 [dependencies]
 clap = { workspace = true }
-codec = { package = "parity-scale-codec", workspace = true }
+parity-scale-codec = { workspace = true }
 color-print = { workspace = true }
 futures = { workspace = true }
 jsonrpsee = { workspace = true }
