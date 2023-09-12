@@ -277,6 +277,19 @@ pub mod mainnet {
 		properties.insert("tokenDecimals".into(), 12.into());
 		properties.insert("ss58Format".into(), 42.into());
 
+		let mut sudo_authority = vec![
+			get_account_id_from_seed::<sr25519::Public>("Charlie"),
+			get_account_id_from_seed::<sr25519::Public>("Dave"),
+			get_account_id_from_seed::<sr25519::Public>("Eve"),
+		];
+		sudo_authority.sort();
+
+		// Define a multisig threshold for 2/3 members
+		let multisig_sudo = pallet_multisig::Pallet::<mainnet_runtime::Runtime>::multi_account_id(
+			&sudo_authority[..],
+			2,
+		);
+
 		MainChainSpec::from_genesis(
 			// Name
 			"Mainnet Development",
@@ -310,6 +323,7 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
+					Some(multisig_sudo.clone()),
 					PARA_ID.into(),
 				)
 			},
@@ -331,6 +345,19 @@ pub mod mainnet {
 		properties.insert("tokenSymbol".into(), "UNIT".into());
 		properties.insert("tokenDecimals".into(), 12.into());
 		properties.insert("ss58Format".into(), 42.into());
+
+		let mut sudo_authority = vec![
+			get_account_id_from_seed::<sr25519::Public>("Charlie"),
+			get_account_id_from_seed::<sr25519::Public>("Dave"),
+			get_account_id_from_seed::<sr25519::Public>("Eve"),
+		];
+		sudo_authority.sort();
+
+		// Define a multisig threshold for 2/3 members
+		let multisig_sudo = pallet_multisig::Pallet::<mainnet_runtime::Runtime>::multi_account_id(
+			&sudo_authority[..],
+			2,
+		);
 
 		MainChainSpec::from_genesis(
 			// Name
@@ -365,6 +392,7 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
+					Some(multisig_sudo.clone()),
 					PARA_ID.into(),
 				)
 			},
@@ -389,20 +417,12 @@ pub mod mainnet {
 	fn mainnet_genesis(
 		invulnerables: Vec<(AccountId, AuraId)>,
 		endowed_accounts: Vec<AccountId>,
+		root_key: Option<AccountId>,
 		id: ParaId,
 	) -> mainnet_runtime::RuntimeGenesisConfig {
-		use mainnet_runtime::{Runtime, EXISTENTIAL_DEPOSIT};
-
+		use mainnet_runtime::EXISTENTIAL_DEPOSIT;
 		let alice = get_from_seed::<sr25519::Public>("Alice");
 		let bob = get_from_seed::<sr25519::Public>("Bob");
-
-		let mut sudo_authority =
-			invulnerables.iter().cloned().take(3).map(|(acc, _)| acc).collect::<Vec<_>>();
-		sudo_authority.sort();
-
-		// Define a multisig threshold for 2/3 members
-		let multisig_sudo =
-			pallet_multisig::Pallet::<Runtime>::multi_account_id(&sudo_authority[..], 2);
 
 		mainnet_runtime::RuntimeGenesisConfig {
 			system: mainnet_runtime::SystemConfig {
@@ -456,7 +476,7 @@ pub mod mainnet {
 			// of this.
 			aura: Default::default(),
 			aura_ext: Default::default(),
-			sudo: mainnet_runtime::SudoConfig { key: Some(multisig_sudo) },
+			sudo: mainnet_runtime::SudoConfig { key: root_key },
 			council: mainnet_runtime::CouncilConfig {
 				phantom: std::marker::PhantomData,
 				members: endowed_accounts.iter().take(4).cloned().collect(),
