@@ -4,7 +4,10 @@ use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_core::{sr25519, Pair, Public};
-use sp_runtime::traits::{IdentifyAccount, Verify};
+use sp_runtime::{
+	traits::{IdentifyAccount, Verify},
+	AccountId32,
+};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type MainChainSpec =
@@ -69,6 +72,21 @@ pub fn mainnet_session_keys(keys: AuraId) -> mainnet_runtime::SessionKeys {
 
 pub fn devnet_session_keys(keys: AuraId) -> devnet_runtime::SessionKeys {
 	devnet_runtime::SessionKeys { aura: keys }
+}
+
+/// Generate a multisig key from a given `authority_set` and a `threshold`
+/// Used for generating a multisig to use as sudo key on mainnet
+pub fn get_multisig_sudo_key(mut authority_set: Vec<AccountId32>, threshold: u16) -> AccountId {
+	assert!(threshold > 0, "Threshold for sudo multisig cannot be 0");
+	assert!(!authority_set.is_empty(), "Sudo threshold multisig ");
+	assert!(authority_set.len() >= threshold.into());
+	authority_set.sort();
+
+	// Define a multisig threshold for `threshold / authoriy_set.len()` members
+	pallet_multisig::Pallet::<mainnet_runtime::Runtime>::multi_account_id(
+		&authority_set[..],
+		threshold,
+	)
 }
 
 pub mod devnet {
@@ -277,19 +295,6 @@ pub mod mainnet {
 		properties.insert("tokenDecimals".into(), 12.into());
 		properties.insert("ss58Format".into(), 42.into());
 
-		let mut sudo_authority = vec![
-			get_account_id_from_seed::<sr25519::Public>("Charlie"),
-			get_account_id_from_seed::<sr25519::Public>("Dave"),
-			get_account_id_from_seed::<sr25519::Public>("Eve"),
-		];
-		sudo_authority.sort();
-
-		// Define a multisig threshold for 2/3 members
-		let multisig_sudo = pallet_multisig::Pallet::<mainnet_runtime::Runtime>::multi_account_id(
-			&sudo_authority[..],
-			2,
-		);
-
 		MainChainSpec::from_genesis(
 			// Name
 			"Mainnet Development",
@@ -323,7 +328,16 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
-					Some(multisig_sudo.clone()),
+					// Example multisig sudo key configuration:
+					// Configures 2/3 threshold multisig key
+					Some(get_multisig_sudo_key(
+						vec![
+							get_account_id_from_seed::<sr25519::Public>("Charlie"),
+							get_account_id_from_seed::<sr25519::Public>("Dave"),
+							get_account_id_from_seed::<sr25519::Public>("Eve"),
+						],
+						2,
+					)),
 					PARA_ID.into(),
 				)
 			},
@@ -345,19 +359,6 @@ pub mod mainnet {
 		properties.insert("tokenSymbol".into(), "UNIT".into());
 		properties.insert("tokenDecimals".into(), 12.into());
 		properties.insert("ss58Format".into(), 42.into());
-
-		let mut sudo_authority = vec![
-			get_account_id_from_seed::<sr25519::Public>("Charlie"),
-			get_account_id_from_seed::<sr25519::Public>("Dave"),
-			get_account_id_from_seed::<sr25519::Public>("Eve"),
-		];
-		sudo_authority.sort();
-
-		// Define a multisig threshold for 2/3 members
-		let multisig_sudo = pallet_multisig::Pallet::<mainnet_runtime::Runtime>::multi_account_id(
-			&sudo_authority[..],
-			2,
-		);
 
 		MainChainSpec::from_genesis(
 			// Name
@@ -392,7 +393,16 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
-					Some(multisig_sudo.clone()),
+					// Example multisig sudo key configuration:
+					// Configures 2/3 threshold multisig key
+					Some(get_multisig_sudo_key(
+						vec![
+							get_account_id_from_seed::<sr25519::Public>("Charlie"),
+							get_account_id_from_seed::<sr25519::Public>("Dave"),
+							get_account_id_from_seed::<sr25519::Public>("Eve"),
+						],
+						2,
+					)),
 					PARA_ID.into(),
 				)
 			},
