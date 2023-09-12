@@ -80,6 +80,9 @@ pub fn get_multisig_sudo_key(mut authority_set: Vec<AccountId32>, threshold: u16
 	assert!(threshold > 0, "Threshold for sudo multisig cannot be 0");
 	assert!(!authority_set.is_empty(), "Sudo threshold multisig ");
 	assert!(authority_set.len() >= threshold.into());
+	// Sorting is done to deterministically order the multisig set
+	// So that a single authority set (A, B, C) may generate only a single unique multisig key
+	// Otherwise, (B, A, C) or (C, A, B) could produce different keys and cause chaos
 	authority_set.sort();
 
 	// Define a multisig threshold for `threshold / authoriy_set.len()` members
