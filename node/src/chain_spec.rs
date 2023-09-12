@@ -78,8 +78,11 @@ pub fn devnet_session_keys(keys: AuraId) -> devnet_runtime::SessionKeys {
 /// Used for generating a multisig to use as sudo key on mainnet
 pub fn get_multisig_sudo_key(mut authority_set: Vec<AccountId32>, threshold: u16) -> AccountId {
 	assert!(threshold > 0, "Threshold for sudo multisig cannot be 0");
-	assert!(!authority_set.is_empty(), "Sudo threshold multisig ");
-	assert!(authority_set.len() >= threshold.into());
+	assert!(!authority_set.is_empty(), "Sudo authority set cannot be empty");
+	assert!(
+		authority_set.len() >= threshold.into(),
+		"Threshold must be less than or equal to authority set members"
+	);
 	// Sorting is done to deterministically order the multisig set
 	// So that a single authority set (A, B, C) may generate only a single unique multisig key
 	// Otherwise, (B, A, C) or (C, A, B) could produce different keys and cause chaos
