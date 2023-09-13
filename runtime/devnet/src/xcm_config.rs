@@ -214,9 +214,9 @@ impl xcm_executor::Config for XcmConfig {
 	type AssetTransactor = AssetTransactors;
 	type OriginConverter = XcmOriginToTransactDispatchOrigin;
 	type IsReserve = NativeAsset;
+	// Teleporting is disabled.
 	type IsTeleporter = ();
 	type Aliasers = Nothing;
-	// Teleporting is disabled.
 	type UniversalLocation = UniversalLocation;
 	type Barrier = Barrier;
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
@@ -265,12 +265,10 @@ impl pallet_xcm::Config for Runtime {
 	// Disable dispatchable execute on the XCM pallet.
 	// NOTE: This needs to be `Everything` for local testing.
 	type XcmExecuteFilter = Nothing;
-	// Disable dispatchable execute on the XCM pallet.
-	// Needs to be `Everything` for local testing.
 	type XcmExecutor = XcmExecutor<XcmConfig>;
 	// No teleportation is allowed.
 	type XcmTeleportFilter = Nothing;
-	// No teleportation is allowed.
+	// All reserve transfers are allowed.
 	type XcmReserveTransferFilter = Everything;
 	// Use (conservative) bounds on estimating XCM execution on this chain.
 	type Weigher = FixedWeightBounds<UnitWeightCost, RuntimeCall, MaxInstructions>;
