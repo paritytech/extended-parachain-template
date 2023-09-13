@@ -336,14 +336,14 @@ pub mod mainnet {
 					],
 					// Example multisig sudo key configuration:
 					// Configures 2/3 threshold multisig key
-					Some(get_multisig_sudo_key(
+					get_multisig_sudo_key(
 						vec![
 							get_account_id_from_seed::<sr25519::Public>("Charlie"),
 							get_account_id_from_seed::<sr25519::Public>("Dave"),
 							get_account_id_from_seed::<sr25519::Public>("Eve"),
 						],
 						2,
-					)),
+					),
 					PARA_ID.into(),
 				)
 			},
@@ -401,14 +401,14 @@ pub mod mainnet {
 					],
 					// Example multisig sudo key configuration:
 					// Configures 2/3 threshold multisig key
-					Some(get_multisig_sudo_key(
+					get_multisig_sudo_key(
 						vec![
 							get_account_id_from_seed::<sr25519::Public>("Charlie"),
 							get_account_id_from_seed::<sr25519::Public>("Dave"),
 							get_account_id_from_seed::<sr25519::Public>("Eve"),
 						],
 						2,
-					)),
+					),
 					PARA_ID.into(),
 				)
 			},
@@ -433,7 +433,7 @@ pub mod mainnet {
 	fn mainnet_genesis(
 		invulnerables: Vec<(AccountId, AuraId)>,
 		endowed_accounts: Vec<AccountId>,
-		root_key: Option<AccountId>,
+		root_key: AccountId,
 		id: ParaId,
 	) -> mainnet_runtime::RuntimeGenesisConfig {
 		use mainnet_runtime::EXISTENTIAL_DEPOSIT;
@@ -448,7 +448,13 @@ pub mod mainnet {
 				..Default::default()
 			},
 			balances: mainnet_runtime::BalancesConfig {
-				balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+				balances: endowed_accounts
+					.iter()
+					.cloned()
+					.map(|k| (k, 1 << 60))
+					// Fund sudo key for sending transactions
+					.chain(std::iter::once((root_key.clone(), 1 << 60)))
+					.collect(),
 			},
 			// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
 			assets: mainnet_runtime::AssetsConfig {
@@ -492,7 +498,7 @@ pub mod mainnet {
 			// of this.
 			aura: Default::default(),
 			aura_ext: Default::default(),
-			sudo: mainnet_runtime::SudoConfig { key: root_key },
+			sudo: mainnet_runtime::SudoConfig { key: Some(root_key) },
 			council: mainnet_runtime::CouncilConfig {
 				phantom: std::marker::PhantomData,
 				members: endowed_accounts.iter().take(4).cloned().collect(),
