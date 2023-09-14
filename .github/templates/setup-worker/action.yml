@@ -11,9 +11,9 @@ runs:
       shell: bash
       run: sudo apt update && sudo apt install -y git clang curl libssl-dev llvm libudev-dev cmake protobuf-compiler
 
-    - name: Install Rust nightly
+    - name: Install Rust stable
       shell: bash
       run: |
-        rustup toolchain install nightly-2023-01-01 --profile minimal --component rustfmt
-        rustup default nightly-2023-01-01
+        rustup toolchain install stable --profile minimal --component rustfmt
+        rustup default stable
         rustup target add wasm32-unknown-unknown
