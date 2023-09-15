@@ -1,5 +1,5 @@
-# Test storage migration using try-runtime on PRs with label "migration"
-name: Test storage migration
+# Test storage migration using try-runtime on PRs with label "migration-mainnet"
+name: Test storage migration for mainnet
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   try_runtime:
-    if: contains(github.event.pull_request.labels.*.name, 'migration')
+    if: contains(github.event.pull_request.labels.*.name, 'migration-mainnet')
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -37,9 +37,9 @@ jobs:
       # a live RPC node is required for the below work
       - run: |
           echo "Found label migration. Running tests"
-          echo "---------- Running try-runtime for extended-parachain-template ----------"
-          cargo build -p parachain-template-node --locked --release --no-default-features --features parachain-template-node/mainnet-runtime,try-runtime && \
+          echo "---------- Running try-runtime for mainnet extended-parachain-template ----------"
+          cargo build -p parachain-template-node --locked --release --no-default-features --features try-runtime && \
           try-runtime --runtime ./target/release/wbuild/mainnet-runtime/target/wasm32-unknown-unknown/release/mainnet_runtime.wasm \
-              on-runtime-upgrade live --uri wss://mainnet-try-runtime-node.parity.io:443
+              on-runtime-upgrade live --uri wss://try-runtime-rpc-node.parity.io:443
         env:
           RUST_LOG: remote-ext=debug,runtime=debug

@@ -1,0 +1,45 @@
+# Test storage migration using try-runtime on PRs with label "migration-devnet"
+name: Test storage migration for devnet
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+  push:
+    branches: [ main ]
+
+jobs:
+  try_runtime:
+    if: contains(github.event.pull_request.labels.*.name, 'migration-devnet')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Setup worker
+        uses: "./.github/templates/setup-worker"
+
+      - name: Cache Build artefacts
+        uses: actions/cache/restore@v3
+        id: cargo-cache
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-release-${{ env.POLKA_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-release-${{ env.POLKA_VERSION }}
+
+      - name: Install try-runtime
+        run: cargo install --git https://github.com/paritytech/try-runtime-cli --locked
+
+      # a live RPC node is required for the below work
+      - run: |
+          echo "Found label migration. Running tests"
+          echo "---------- Running try-runtime for devnet extended-parachain-template ----------"
+          cargo build -p parachain-template-node --locked --release --no-default-features --features try-runtime && \
+          try-runtime --runtime ./target/release/wbuild/devnet-runtime/target/wasm32-unknown-unknown/release/devnet_runtime.wasm \
+              on-runtime-upgrade live --uri wss://dev-try-runtime-rpc-node.parity.io:443
+        env:
+          RUST_LOG: remote-ext=debug,runtime=debug
