@@ -336,6 +336,7 @@ pub mod mainnet {
 					],
 					// Example multisig sudo key configuration:
 					// Configures 2/3 threshold multisig key
+					// Note: For using this multisig key as a sudo key, each individual signatory must possess funds
 					get_multisig_sudo_key(
 						vec![
 							get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -401,6 +402,7 @@ pub mod mainnet {
 					],
 					// Example multisig sudo key configuration:
 					// Configures 2/3 threshold multisig key
+					// Note: For using this multisig key as a sudo key, each individual signatory must possess funds
 					get_multisig_sudo_key(
 						vec![
 							get_account_id_from_seed::<sr25519::Public>("Charlie"),
@@ -451,9 +453,9 @@ pub mod mainnet {
 				balances: endowed_accounts
 					.iter()
 					.cloned()
-					.map(|k| (k, 1 << 60))
 					// Fund sudo key for sending transactions
-					.chain(std::iter::once((root_key.clone(), 1 << 60)))
+					.chain(std::iter::once(root_key.clone()))
+					.map(|k| (k, 1 << 60))
 					.collect(),
 			},
 			// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
