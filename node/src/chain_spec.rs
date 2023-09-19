@@ -4,7 +4,10 @@ use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_core::{sr25519, Pair, Public};
-use sp_runtime::traits::{IdentifyAccount, Verify};
+use sp_runtime::{
+	traits::{IdentifyAccount, Verify},
+	AccountId32,
+};
 
 /// Specialized `ChainSpec` for the normal parachain runtime.
 pub type MainChainSpec =
@@ -69,6 +72,27 @@ pub fn mainnet_session_keys(keys: AuraId) -> mainnet_runtime::SessionKeys {
 
 pub fn devnet_session_keys(keys: AuraId) -> devnet_runtime::SessionKeys {
 	devnet_runtime::SessionKeys { aura: keys }
+}
+
+/// Generate a multisig key from a given `authority_set` and a `threshold`
+/// Used for generating a multisig to use as sudo key on mainnet
+pub fn get_multisig_sudo_key(mut authority_set: Vec<AccountId32>, threshold: u16) -> AccountId {
+	assert!(threshold > 0, "Threshold for sudo multisig cannot be 0");
+	assert!(!authority_set.is_empty(), "Sudo authority set cannot be empty");
+	assert!(
+		authority_set.len() >= threshold.into(),
+		"Threshold must be less than or equal to authority set members"
+	);
+	// Sorting is done to deterministically order the multisig set
+	// So that a single authority set (A, B, C) may generate only a single unique multisig key
+	// Otherwise, (B, A, C) or (C, A, B) could produce different keys and cause chaos
+	authority_set.sort();
+
+	// Define a multisig threshold for `threshold / authoriy_set.len()` members
+	pallet_multisig::Pallet::<mainnet_runtime::Runtime>::multi_account_id(
+		&authority_set[..],
+		threshold,
+	)
 }
 
 pub mod devnet {
@@ -310,7 +334,17 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
-					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+					// Example multisig sudo key configuration:
+					// Configures 2/3 threshold multisig key
+					// Note: For using this multisig key as a sudo key, each individual signatory must possess funds
+					get_multisig_sudo_key(
+						vec![
+							get_account_id_from_seed::<sr25519::Public>("Charlie"),
+							get_account_id_from_seed::<sr25519::Public>("Dave"),
+							get_account_id_from_seed::<sr25519::Public>("Eve"),
+						],
+						2,
+					),
 					PARA_ID.into(),
 				)
 			},
@@ -366,7 +400,17 @@ pub mod mainnet {
 						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					],
-					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+					// Example multisig sudo key configuration:
+					// Configures 2/3 threshold multisig key
+					// Note: For using this multisig key as a sudo key, each individual signatory must possess funds
+					get_multisig_sudo_key(
+						vec![
+							get_account_id_from_seed::<sr25519::Public>("Charlie"),
+							get_account_id_from_seed::<sr25519::Public>("Dave"),
+							get_account_id_from_seed::<sr25519::Public>("Eve"),
+						],
+						2,
+					),
 					PARA_ID.into(),
 				)
 			},
@@ -391,7 +435,7 @@ pub mod mainnet {
 	fn mainnet_genesis(
 		invulnerables: Vec<(AccountId, AuraId)>,
 		endowed_accounts: Vec<AccountId>,
-		root_key: Option<AccountId>,
+		root_key: AccountId,
 		id: ParaId,
 	) -> mainnet_runtime::RuntimeGenesisConfig {
 		use mainnet_runtime::EXISTENTIAL_DEPOSIT;
@@ -406,7 +450,13 @@ pub mod mainnet {
 				..Default::default()
 			},
 			balances: mainnet_runtime::BalancesConfig {
-				balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+				balances: endowed_accounts
+					.iter()
+					.cloned()
+					// Fund sudo key for sending transactions
+					.chain(std::iter::once(root_key.clone()))
+					.map(|k| (k, 1 << 60))
+					.collect(),
 			},
 			// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
 			assets: mainnet_runtime::AssetsConfig {
@@ -450,7 +500,7 @@ pub mod mainnet {
 			// of this.
 			aura: Default::default(),
 			aura_ext: Default::default(),
-			sudo: mainnet_runtime::SudoConfig { key: root_key },
+			sudo: mainnet_runtime::SudoConfig { key: Some(root_key) },
 			council: mainnet_runtime::CouncilConfig {
 				phantom: std::marker::PhantomData,
 				members: endowed_accounts.iter().take(4).cloned().collect(),

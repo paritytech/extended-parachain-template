@@ -12,9 +12,13 @@ publish = false
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-parity-scale-codec = { workspace = true, default-features = false, features = ["derive"] }
+parity-scale-codec = { workspace = true, default-features = false, features = [
+	"derive",
+] }
 log = { workspace = true, default-features = false }
-scale-info = { workspace = true, default-features = false, features = ["derive"] }
+scale-info = { workspace = true, default-features = false, features = [
+	"derive",
+] }
 frame-benchmarking = { workspace = true, default-features = false, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }

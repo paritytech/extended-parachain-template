@@ -6,13 +6,13 @@ This is a solid starting point for most Parachain projects as it is a more featu
 
 This template is maintained by the **Delivery Services** team at **Parity**.
 
-## Getting Started
+## 🚀 Getting Started
 
-### Rust Setup
+### 🦀 Rust Setup
 
 First, complete the [basic Rust setup instructions](./docs/rust-setup.md).
 
-### Build
+### 🔧 Build
 
 Clone the extended parachain template repository: 
 
@@ -26,6 +26,7 @@ Use the following command to build the node without launching it:
 cargo build --release
 ```
 
+### 🕸️ Run a local network 
 Next you will need a compatible release of [Polkadot](https://github.com/paritytech/polkadot) to run a testnet. You may also want to use [Zombienet (available for Linux and MacOS)](https://github.com/paritytech/zombienet/releases) for spinning up a testnet: 
 
 
@@ -62,9 +63,6 @@ Commands:
   help [command]                         display help for command
 
 ```
-
-### Setting up Zombienet config
-
 You may use a reference implementation from the folder `zombienet-config` or make your own. More instructions here: [Simulate parachains in a test network
 ](https://docs.substrate.io/test/simulate-parachains/)
 
@@ -74,3 +72,7 @@ parathreads [here](https://wiki.polkadot.network/docs/learn-parathreads).
 
 🧙 Learn about how to use this template and run your own parachain testnet for it in the
 [Devhub Cumulus Tutorial](https://docs.substrate.io/tutorials/v3/cumulus/start-relay/).
+
+ ## 🏛 Governance
+
+ Parachain governance is a very crucial topic that goes beyond using `sudo` for privileged calls. [Read our Governance Explainer here](./docs/governance.md)
