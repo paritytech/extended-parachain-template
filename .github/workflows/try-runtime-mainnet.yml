@@ -36,7 +36,7 @@ jobs:
 
       # a live RPC node is required for the below work
       - run: |
-          echo "Found label migration. Running tests"
+          echo "Found label "migration-mainnet". Running tests"
           echo "---------- Running try-runtime for mainnet extended-parachain-template ----------"
           cargo build -p parachain-template-node --locked --release --no-default-features --features try-runtime && \
           try-runtime --runtime ./target/release/wbuild/mainnet-runtime/target/wasm32-unknown-unknown/release/mainnet_runtime.wasm \
