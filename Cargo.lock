@@ -6958,6 +6958,7 @@ dependencies = [
  "jsonrpsee",
  "log",
  "mainnet-runtime",
+ "pallet-multisig",
  "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "polkadot-cli",

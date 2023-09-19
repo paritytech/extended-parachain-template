@@ -2,12 +2,7 @@
 panic = "unwind"
 
 [workspace]
-members = [
-  "node",
-  "pallets/*",
-  "runtime/mainnet",
-  "runtime/devnet",
-]
+members = ["node", "pallets/*", "runtime/mainnet", "runtime/devnet"]
 resolver = "2"
 
 [workspace.package]
@@ -26,7 +21,9 @@ futures = "0.3.28"
 hex-literal = { version = "0.4.1" }
 jsonrpsee = { version = "0.16.2", features = ["server"] }
 log = { version = "0.4.20", default-features = false }
-parity-scale-codec = { version = "3.2.2", default-features = false, features = ["derive"] }
+parity-scale-codec = { version = "3.2.2", default-features = false, features = [
+  "derive",
+] }
 scale-info = { version = "2.9.0", default-features = false }
 serde = { version = "1.0.183", features = ["derive"] }
 serde_json = "1.0.85"
@@ -42,8 +39,8 @@ runtime-common = { path = "runtime/common", default-features = false }
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 frame-benchmarking-cli = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 frame-executive = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
-frame-support = {version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
-frame-system = {version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 frame-system-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
 frame-system-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
 frame-try-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
@@ -90,7 +87,7 @@ sp-keystore = { git = "https://github.com/paritytech/substrate", branch = "polka
 sp-offchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 sp-session = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
-sp-std = {version = "8.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+sp-std = { version = "8.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 sp-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0" }
 sp-transaction-pool = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 sp-version = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v1.0.0" }
@@ -126,7 +123,9 @@ parachains-common = { git = "https://github.com/paritytech/cumulus", branch = "p
 
 # Polkadot
 pallet-xcm = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v1.0.0" }
-polkadot-cli = { git = "https://github.com/paritytech/polkadot", features = ["rococo-native"], branch = "release-v1.0.0" }
+polkadot-cli = { git = "https://github.com/paritytech/polkadot", features = [
+  "rococo-native",
+], branch = "release-v1.0.0" }
 polkadot-parachain = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v1.0.0" }
 polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "release-v1.0.0", default-features = false }
 polkadot-runtime-common = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v1.0.0" }
