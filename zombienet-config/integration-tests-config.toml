@@ -1,0 +1,69 @@
+[relaychain]
+chain = "rococo-local"
+default_command = "./bin/polkadot"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+  ws_port = 9900
+  extra_args = [ "-lparachain=debug" ]
+
+  [[relaychain.nodes]]
+  name = "bob"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "charlie"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "dave"
+  validator = true
+
+[[parachains]]
+id = 1000
+add_to_genesis = true
+cumulus_based = true
+chain = "statemine-local"
+
+  [[parachains.collators]]
+  name = "statemine-collator01"
+  command = "./bin/polkadot-parachain"
+  ws_port = 9910
+  args = ["--log=xcm=trace,pallet-assets=trace"]
+
+  [[parachains.collators]]
+  name = "statemine-collator02"
+  command = "./bin/polkadot-parachain"
+  ws_port = 9911
+  args = ["--log=xcm=trace,pallet-assets=trace"]
+
+[[parachains]]
+id = 2000
+addToGenesis = true
+cumulus_based = true
+
+  [[parachains.collators]]
+  name = "parachain-collator01"
+  command = "./target/release/parachain-template-node"
+  ws_port = 9920
+  args = ["--log=xcm=trace,pallet-assets=trace"]
+
+  [[parachains.collators]]
+  name = "parachain-collator02"
+  command = "./target/release/parachain-template-node"
+  ws_port = 9921
+  args = ["--log=xcm=trace,pallet-assets=trace"]
+
+
+[[hrmp_channels]]
+sender = 1000
+recipient = 2000
+max_capacity = 8
+max_message_size = 512
+
+[[hrmp_channels]]
+sender = 2000
+recipient = 1000
+max_capacity = 8
+max_message_size = 512
