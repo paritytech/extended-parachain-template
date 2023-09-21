@@ -65,7 +65,7 @@ sp-version = { workspace = true, default-features = false }
 
 # Polkadot
 pallet-xcm = { workspace = true, default-features = false }
-polkadot-parachain = { workspace = true, default-features = false }
+polkadot-parachain-primitives = { workspace = true, default-features = false }
 polkadot-runtime-common = { workspace = true, default-features = false }
 xcm = { workspace = true, default-features = false }
 xcm-builder = { workspace = true, default-features = false }
@@ -122,7 +122,7 @@ std = [
   "pallet-utility/std",
   "pallet-xcm/std",
   "parachain-info/std",
-  "polkadot-parachain/std",
+  "polkadot-parachain-primitives/std",
   "polkadot-runtime-common/std",
   "sp-api/std",
   "sp-block-builder/std",

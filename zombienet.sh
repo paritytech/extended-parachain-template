@@ -1,7 +1,7 @@
 #!/bin/bash
 
-ZOMBIENET_V=v1.3.55
-POLKADOT_V=v0.9.42
+ZOMBIENET_V=v1.3.67
+POLKADOT_V=v1.1.0
 
 case "$(uname -s)" in
     Linux*)     MACHINE=Linux;;
@@ -20,7 +20,7 @@ build_polkadot(){
   CWD=$(pwd)
   mkdir -p bin
   pushd /tmp
-    git clone https://github.com/paritytech/polkadot.git
+    git clone https://github.com/paritytech/polkadot-sdk.git
     pushd polkadot
       git checkout $POLKADOT_V
       echo "building polkadot executable..."

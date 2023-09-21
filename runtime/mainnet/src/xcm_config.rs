@@ -4,13 +4,13 @@ use super::{
 };
 use core::{marker::PhantomData, ops::ControlFlow};
 use frame_support::{
-	log, match_types, parameter_types,
+	match_types, parameter_types,
 	traits::{ConstU32, Everything, Nothing, PalletInfoAccess, ProcessMessageError},
 	weights::Weight,
 };
 use frame_system::EnsureRoot;
 use pallet_xcm::XcmPassthrough;
-use polkadot_parachain::primitives::Sibling;
+use polkadot_parachain_primitives::primitives::Sibling;
 use polkadot_runtime_common::impls::ToAuthor;
 use xcm::latest::prelude::*;
 use xcm_builder::{
