@@ -435,32 +435,24 @@ where
 {
 	let slot_duration = cumulus_client_consensus_aura::slot_duration(&*client)?;
 
-	cumulus_client_consensus_aura::import_queue::<
+	Ok(cumulus_client_consensus_aura::equivocation_import_queue::fully_verifying_import_queue::<
 		sp_consensus_aura::sr25519::AuthorityPair,
 		_,
 		_,
 		_,
 		_,
-		_,
-	>(cumulus_client_consensus_aura::ImportQueueParams {
-		block_import,
+	>(
 		client,
-		create_inherent_data_providers: move |_, _| async move {
+		block_import,
+		move |_, _| async move {
 			let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-
-			let slot =
-				sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
-					*timestamp,
-					slot_duration,
-				);
-
-			Ok((slot, timestamp))
+			Ok(timestamp)
 		},
-		registry: config.prometheus_registry(),
-		spawner: &task_manager.spawn_essential_handle(),
+		slot_duration,
+		&task_manager.spawn_essential_handle(),
+		config.prometheus_registry(),
 		telemetry,
-	})
-	.map_err(Into::into)
+	))
 }
 
 #[allow(clippy::too_many_arguments)]
