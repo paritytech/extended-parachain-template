@@ -195,13 +195,13 @@ where
 /// This is the actual implementation that is abstract over the executor and the runtime api.
 #[sc_tracing::logging::prefix_logs_with("Parachain")]
 #[allow(clippy::too_many_arguments)]
-async fn start_node_impl<RuntimeApi, Executor, BIQ, BIC>(
+async fn start_node_impl<RuntimeApi, Executor, BIQ, SC>(
 	parachain_config: Configuration,
 	polkadot_config: Configuration,
 	collator_options: CollatorOptions,
 	para_id: ParaId,
 	build_import_queue: BIQ,
-	start_consensus: BIC,
+	start_consensus: SC,
 	hwbench: Option<sc_sysinfo::HwBench>,
 ) -> sc_service::error::Result<(TaskManager, Arc<ParachainClient<RuntimeApi, Executor>>)>
 where
@@ -229,7 +229,7 @@ where
 			&TaskManager,
 		) -> Result<sc_consensus::DefaultImportQueue<Block>, sc_service::Error>
 		+ 'static,
-	BIC: FnOnce(
+	SC: FnOnce(
 		Arc<ParachainClient<RuntimeApi, Executor>>,
 		ParachainBlockImport<RuntimeApi, Executor>,
 		Option<&Registry>,
