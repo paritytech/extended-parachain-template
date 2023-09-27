@@ -27,4 +27,14 @@ cargo build --release
 
 Please refer to the [project's `README.md`](https://github.com/paritytech/parachains-integration-tests#how-to-use) for an extensive description of how to write YAML test files and how to execute tests.
 
+In `integration-tests/force_hrmp_open_channels.yml` you can find a test to open a HRMP channel between this parachain and an asset-hub local network.
 
+Run zombienet and wait until both parachains are propertly onboarded (producing blocks):
+```
+$ zombienet-macos spawn zombienet-config/integration-tests-config.toml -p native
+```
+
+Run the tests:
+```
+$ parachains-integration-tests -m test -t integration-tests/force_hrmp_open_channels.yml
+```
