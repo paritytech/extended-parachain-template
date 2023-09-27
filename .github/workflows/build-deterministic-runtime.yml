@@ -70,6 +70,7 @@ jobs:
           subwasm --json meta ${{ steps.srtool_build.outputs.wasm }} > ${{ matrix.runtime }}-metadata.json
 
       - name: Archive Subwasm results
+        if: github.event_name != 'release'
         uses: actions/upload-artifact@3cea5372237819ed00197afe530f5a7ea3e805c8 # v3.1.0
         with:
           name: ${{ matrix.runtime }}-info
@@ -99,4 +100,5 @@ jobs:
           files: |
             ${{ steps.srtool_build.outputs.wasm_compressed }}
             ${{ matrix.runtime }}-srtool-digest.json
-            ${{ matrix.runtime }}-info
+            ${{ matrix.runtime }}-info_compressed.json
+            ${{ matrix.runtime }}-metadata.json
