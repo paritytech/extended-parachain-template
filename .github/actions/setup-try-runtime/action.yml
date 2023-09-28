@@ -3,6 +3,7 @@ name: Install try-runtime
 
 runs:
   using: "composite"
+  shell: "bash"
   steps:
     - name: Check out the repo
       uses: actions/checkout@v4
