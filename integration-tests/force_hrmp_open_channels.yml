@@ -11,10 +11,10 @@ settings:
       paraId: &lp_id 2000
   variables:
     common:
-      amount: &amount 2000000000000
+      amount: &amount 20000000000000
       hrmp_channels:
         proposed_max_capacity: &max_capacity 8
-        proposed_max_message_size: &max_message_size 8192
+        proposed_max_message_size: &max_message_size 1048576
         channel: &channel {
           maxCapacity: *max_capacity,
           maxTotalSize: *max_message_size,
@@ -35,7 +35,7 @@ settings:
 
 tests:
   - name: HRMP
-    beforeEach:
+    before:
       - name: DEPENDENCY | Local Parachain Sovereign account in the Relay Chain needs to be funded
         actions:
           - extrinsics:

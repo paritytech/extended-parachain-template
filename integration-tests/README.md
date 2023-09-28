@@ -29,6 +29,8 @@ Please refer to the [project's `README.md`](https://github.com/paritytech/parach
 
 In `integration-tests/force_hrmp_open_channels.yml` you can find a test to open a HRMP channel between this parachain and an asset-hub local network.
 
+In `integration-tests/transact.yml` you can find a test to make a transfer from this parachain sovereign account to asset-hub local network sovereign account via a XCM Transact in the Relay Chain.
+
 Run zombienet and wait until both parachains are propertly onboarded (producing blocks):
 ```
 $ zombienet-macos spawn zombienet-config/integration-tests-config.toml -p native
@@ -37,4 +39,5 @@ $ zombienet-macos spawn zombienet-config/integration-tests-config.toml -p native
 Run the tests:
 ```
 $ parachains-integration-tests -m test -t integration-tests/force_hrmp_open_channels.yml
+$ parachains-integration-tests -m test -t integration-tests/transact.yml
 ```

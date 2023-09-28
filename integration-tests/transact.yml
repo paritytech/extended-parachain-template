@@ -1,0 +1,92 @@
+---
+settings:
+  chains:
+    relay_chain: &relay_chain
+      wsPort: 9900
+    assets_parachain: &assets_parachain
+      wsPort: 9910
+      paraId: &ap_id 1000
+    local_parachain: &local_parachain
+      wsPort: 9920
+      paraId: &lp_id 2000
+  variables:
+    common:
+      amount: &amount 120000000000
+      amount_to_send: &amount_to_send 500000000000
+      require_weight_at_most: &weight_at_most {refTime: 1000000000, proofSize: 200000}
+    chains:
+      assets_parachain:
+        assets_sovereign_account: &ap_sovereign 5Ec4AhPZk8STuex8Wsi9TwDtJQxKqzPJRCH7348Xtcs9vZLJ
+      local_parachain:
+        signer: &lp_signer //Alice
+        relay_chain_dest_routed: &relay_dest_routed { v3: { parents: 1, interior: Here }}
+        local_sovereign_account: &lp_sovereign 5Ec4AhPUwPeyTFyuhGuBbD224mY85LKLMSqSSo33JYWCazU4
+  decodedCalls:
+    transfer_allow_death:
+        chain: *relay_chain
+        pallet: balances
+        call: transferAllowDeath
+        args: [ 
+          { Id: *ap_sovereign }, # destination
+          *amount_to_send, # value
+        ]
+
+tests:
+  - name: Transfer from Local Parachain Sovereign Account to Assets Parachain Sovereign account
+    its:
+      - name: Transact ->  Local Parachain sends XCM instructions to make a transact on Relay Chain.
+        actions:
+          - extrinsics:
+              - chain: *local_parachain
+                signer: *lp_signer
+                sudo: true
+                pallet: polkadotXcm
+                call: send
+                args: [
+                  *relay_dest_routed, # destination
+                  { # message
+                    v3: [
+                      {
+                        WithdrawAsset: [
+                          { 
+                            id: {
+                              concrete: {
+                                parents: 0,
+                                interior: Here
+                              }
+                            }, 
+                            fun: { fungible: *amount }
+                          }
+                        ]
+                      },
+                      {
+                        BuyExecution: {
+                          fees: { 
+                            id: {
+                              concrete: {
+                                parents: 0,
+                                interior: Here
+                              }
+                            },
+                            fun: { fungible: *amount }
+                          },
+                          weightLimit: Unlimited
+                        }
+                      },
+                      {
+                        Transact: {
+                          originKind: SovereignAccount,
+                          requireWeightAtMost: *weight_at_most,
+                          call: $transfer_allow_death
+                        }
+                      },
+                    ]
+                  }
+                ]
+                events:
+                  - name: sudo.Sudid
+                    result: { sudoResult: Ok }
+                  - name: polkadotXcm.Sent
+                  - name: balances.Transfer
+                    chain: *relay_chain
+                    result: { from: *lp_sovereign, to: *ap_sovereign }
