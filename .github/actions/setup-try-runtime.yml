@@ -2,18 +2,19 @@
 name: Install try-runtime
 
 runs:
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v4
+  using: "composite"
+  steps:
+    - name: Check out the repo
+      uses: actions/checkout@v4
 
-      - name: Rust Setup
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          target: wasm32-unknown-unknown
-          override: true
-          components: rustfmt, clippy
+    - name: Rust Setup
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        target: wasm32-unknown-unknown
+        override: true
+        components: rustfmt, clippy
 
-      - name: Install try-runtime
-        run: cargo install --git https://github.com/paritytech/try-runtime-cli --locked
+    - name: Install try-runtime
+      run: cargo install --git https://github.com/paritytech/try-runtime-cli --locked
