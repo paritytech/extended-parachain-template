@@ -14,9 +14,8 @@ runs:
         components: rustfmt, clippy
 
     - name: Install protoc
-        run: |
-          sudo apt-get install -y protobuf-compiler
-          protoc --version
+        run: sudo apt-get install -y protobuf-compiler && protoc --version
+        shell: bash
 
     - name: Rust Cache
         uses: Swatinem/rust-cache@v2.5.0
