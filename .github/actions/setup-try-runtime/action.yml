@@ -19,3 +19,4 @@ runs:
 
     - name: Install try-runtime
       run: cargo install --git https://github.com/paritytech/try-runtime-cli --locked
+      shell: bash
