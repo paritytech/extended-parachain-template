@@ -1,5 +1,5 @@
 # Test storage migration using try-runtime on PRs with label "migration-mainnet"
-name: Test storage migration
+name: Test storage migration (mainnet)
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Setup try-runtime
         uses: ./.github/actions/setup-try-runtime
