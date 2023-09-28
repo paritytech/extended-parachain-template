@@ -12,6 +12,9 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'migration-mainnet')
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
       - name: Setup try-runtime
         uses: ./.github/actions/setup-try-runtime
 
