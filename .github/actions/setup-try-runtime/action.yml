@@ -1,9 +1,19 @@
 # Install try-runtime
 name: Install try-runtime
+description: |
+  This action sets up the rust toolchain, installs the protoc compiler
+  dependency, rust-cache and try-runtime.
 
 runs:
   using: "composite"
   steps:
+    - name: Free up space on runner
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
     - name: Rust Setup
       uses: actions-rs/toolchain@v1
       with:
