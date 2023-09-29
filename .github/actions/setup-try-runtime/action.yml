@@ -13,6 +13,7 @@ runs:
         sudo rm -rf /opt/ghc
         sudo rm -rf "/usr/local/share/boost"
         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      shell: bash
 
     - name: Rust Setup
       uses: actions-rs/toolchain@v1
