@@ -1,5 +1,5 @@
 # Test storage migration using try-runtime on PRs with label "migration-mainnet"
-name: Test storage migration for mainnet
+name: Test storage migration (mainnet)
 
 on:
   pull_request:
@@ -12,27 +12,11 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'migration-mainnet')
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repo
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup worker
-        uses: "./.github/templates/setup-worker"
-
-      - name: Cache Build artefacts
-        uses: actions/cache/restore@v3
-        id: cargo-cache
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-release-${{ env.POLKA_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-release-${{ env.POLKA_VERSION }}
-
-      - name: Install try-runtime
-        run: cargo install --git https://github.com/paritytech/try-runtime-cli --locked
+      - name: Setup try-runtime
+        uses: ./.github/actions/setup-try-runtime
 
       # a live RPC node is required for the below work
       - run: |
@@ -43,3 +27,4 @@ jobs:
               on-runtime-upgrade live --uri wss://try-runtime-rpc-node.parity.io:443
         env:
           RUST_LOG: remote-ext=debug,runtime=debug
+
