@@ -15,6 +15,7 @@ Review the [Run a local network](https://github.com/paritytech/extended-parachai
 
 Create a `bin` directory into the root of this repository and place the following binaries inside of it:
 - `polkadot` (which you can download from [the releases](https://github.com/paritytech/polkadot/releases)).
+
 Note: Downloading polkadot will automatically download also the binaries of `polkadot-prepare-worker`, `polkadot-execute-worker`. Since Polkadot v1.0 all 3 binaries are needed for the node to run as a validator
 - `polkadot-parachain` (which you will build from [cumulus](https://github.com/paritytech/cumulus))
 
