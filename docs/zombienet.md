@@ -43,7 +43,7 @@ Commands:
 
 You may use a reference implementation from the folder `zombienet-config` or make your own. We provide a simple configuration for you called [zombienet-config.toml](../zombienet-config.toml) which spins up two validators for the relay chain, and one collator for your parachain to get you quickly upto speed.
 
-⚠️ Take note: the path of the polkadot executable used there is `../bin/polkadot` which means you need to have a folder called `bin` outside the repository directory which contains your compiled polkadot binary which must be named as `polkadot`. Also please take care to compile the correct version of `polkadot` when testing out on your machine. You can do so by cloning `polkadot` and then checking out the appropriate branch that corresponds to the substrate/cumulus version used to build the template.
+⚠️ Note: the path of the polkadot executable used there is `./bin/polkadot` which means you need to have your compiled polkadot binary inside a folder `./bin`. Also since `polkadot-v1.1.0`, two additional binaries would be needed to run the relay chain node called `polkadot-prepare-worker` and `polkadot-execute-worker` both of which can be found in the [Polkadot-Sdk release page](https://github.com/paritytech/polkadot-sdk/releases/tag/polkadot-v1.1.0). Place these binaries alongside the main `polkadot` binary.
 
 More instructions here: [Simulate parachains in a test network
 ](https://docs.substrate.io/test/simulate-parachains/)
