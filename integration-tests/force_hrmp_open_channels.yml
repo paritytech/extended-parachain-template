@@ -15,16 +15,6 @@ settings:
       hrmp_channels:
         proposed_max_capacity: &max_capacity 8
         proposed_max_message_size: &max_message_size 1048576
-        channel: &channel {
-          maxCapacity: *max_capacity,
-          maxTotalSize: *max_message_size,
-          maxMessageSize: *max_message_size,
-          msgCount: 0,
-          totalSize: 0,
-          mqcHead: null,
-          senderDeposit: 0,
-          recipientDeposit: 0
-        }
     chains:
       relay_chain:
         signer: &rc_signer //Alice
