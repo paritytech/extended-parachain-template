@@ -1,0 +1,122 @@
+---
+settings:
+  chains:
+    relay_chain: &relay_chain
+      wsPort: 9900
+    assets_parachain:
+      wsPort: 9910
+      paraId: &ap_id 1000
+    local_parachain:
+      wsPort: 9920
+      paraId: &lp_id 2000
+  variables:
+    common:
+      amount: &amount 20000000000000
+      hrmp_channels:
+        proposed_max_capacity: &max_capacity 8
+        proposed_max_message_size: &max_message_size 1048576
+        channel: &channel {
+          maxCapacity: *max_capacity,
+          maxTotalSize: *max_message_size,
+          maxMessageSize: *max_message_size,
+          msgCount: 0,
+          totalSize: 0,
+          mqcHead: null,
+          senderDeposit: 0,
+          recipientDeposit: 0
+        }
+    chains:
+      relay_chain:
+        signer: &rc_signer //Alice
+      assets_parachain_account:
+        sovereign_account: &ap_sovereign F7fq1jSNVTPfJmaHaXCMtatT1EZefCUsa7rRiQVNR5efcah
+      local_parachain:
+        sovereign_account: &lp_sovereign F7fq1jMZkfuCuoMTyiEVAP2DMpMt18WopgBqTJznLihLNbZ
+
+tests:
+  - name: HRMP
+    before:
+      - name: DEPENDENCY | Local Parachain Sovereign account in the Relay Chain needs to be funded
+        actions:
+          - extrinsics:
+              - chain: *relay_chain
+                signer: *rc_signer
+                pallet: balances
+                call: transferAllowDeath
+                args: [
+                  *lp_sovereign, # destination
+                  *amount, # value
+                ]
+                events:
+                  - name: balances.Transfer
+
+      - name: DEPENDENCY | Assets Parachain Sovereign account in the Relay Chain needs to be funded
+        actions:
+          - extrinsics:
+              - chain: *relay_chain
+                signer: *rc_signer
+                pallet: balances
+                call: transferAllowDeath
+                args: [
+                  *ap_sovereign, # destination
+                  *amount, # value
+                ]
+                events:
+                  - name: balances.Transfer
+    describes:
+      - name: hrmp.forceOpenHrmpChannel (Local Parachain → Assets Parachain)
+        its:
+          - name: Open Local Parachain to Assets Parachain
+            actions:
+              - extrinsics:
+                  - chain: *relay_chain
+                    signer: *rc_signer
+                    sudo: true
+                    pallet: hrmp
+                    call: forceOpenHrmpChannel
+                    args: [
+                      *lp_id,
+                      *ap_id,
+                      *max_capacity,
+                      *max_message_size
+                    ]
+                    events:
+                      - name: sudo.Sudid
+                        result: { sudoResult: Ok }
+                      - name: hrmp.HrmpChannelForceOpened
+
+      - name: hrmp.forceOpenHrmpChannel (Assets Parachain → Local Parachain)
+        its:
+          - name: Open Assets Parachain to Local Parachain
+            actions:
+              - extrinsics:
+                  - chain: *relay_chain
+                    signer: *rc_signer
+                    sudo: true
+                    pallet: hrmp
+                    call: forceOpenHrmpChannel
+                    args: [
+                      *ap_id,
+                      *lp_id,
+                      *max_capacity,
+                      *max_message_size
+                    ]
+                    events:
+                      - name: sudo.Sudid
+                        result: { sudoResult: Ok }
+                      - name: hrmp.HrmpChannelForceOpened
+
+      - name: hrmp.forceProcessHrmpOpen (make sure all the channels are open)
+        its:
+          - name: Make sure all the pending channels are open
+            actions:
+              - extrinsics:
+                  - chain: *relay_chain
+                    signer: *rc_signer
+                    sudo: true
+                    pallet: hrmp
+                    call: forceProcessHrmpOpen
+                    args: [ 2 ]
+                    events:
+                      - name: sudo.Sudid
+                        result: { sudoResult: Ok }
