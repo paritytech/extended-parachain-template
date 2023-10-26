@@ -21,7 +21,7 @@ build_polkadot(){
   mkdir -p bin
   pushd /tmp
     git clone https://github.com/paritytech/polkadot-sdk.git
-    pushd polkadot
+    pushd polkadot-sdk
       git checkout $POLKADOT_V
       echo "building polkadot executable..."
       cargo build --release --features fast-runtime
