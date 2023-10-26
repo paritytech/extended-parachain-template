@@ -3,6 +3,12 @@
 ZOMBIENET_V=v1.3.68
 POLKADOT_V=v1.1.0
 
+POLKADOT_FILES=(
+  "polkadot"
+  "polkadot-execute-worker"
+  "polkadot-prepare-worker"
+)
+
 case "$(uname -s)" in
     Linux*)     MACHINE=Linux;;
     Darwin*)    MACHINE=Mac;;
@@ -25,7 +31,7 @@ build_polkadot(){
       git checkout release-polkadot-$POLKADOT_V
       echo "building polkadot executable..."
       cargo build --release --features fast-runtime
-      cp target/release/polkadot $CWD/bin
+      cp ${POLKADOT_FILES[@]/#/target/release/} $CWD/bin
     popd
   popd
 }
@@ -36,9 +42,9 @@ zombienet_init() {
     curl -LO https://github.com/paritytech/zombienet/releases/download/$ZOMBIENET_V/$ZOMBIENET_BIN
     chmod +x $ZOMBIENET_BIN
   fi
-  if [ ! -f bin/polkadot ]; then
-    build_polkadot
-  fi
+  for file in "${POLKADOT_FILES[@]}"; do
+      [[ -f "bin/$file" ]] || { build_polkadot; break; }
+  done
 }
 
 zombienet_spawn() {
