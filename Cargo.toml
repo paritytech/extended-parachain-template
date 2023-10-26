@@ -60,6 +60,8 @@ pallet-transaction-payment = { version = "23.0.0", default-features = false }
 pallet-transaction-payment-rpc = { version = "25.0.0" }
 pallet-transaction-payment-rpc-runtime-api = { version = "23.0.0", default-features = false }
 pallet-utility = { version = "23.0.0", default-features = false }
+pallet-safe-mode = { version = "4.0.0", default-features = false }
+pallet-tx-pause = { version = "4.0.0", default-features = false }
 sc-basic-authorship = { version = "0.29.0" }
 sc-chain-spec = { version = "22.0.0" }
 sc-cli = { version = "0.31.0" }
