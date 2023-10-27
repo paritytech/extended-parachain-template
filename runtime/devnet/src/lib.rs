@@ -621,6 +621,7 @@ impl Contains<RuntimeCall> for SafeModeWhitelistedCalls {
 			RuntimeCall::System(_)
 			| RuntimeCall::SafeMode(_)
 			| RuntimeCall::TxPause(_)
+			// balance transfers are allowed
 			| RuntimeCall::Balances(_) => true,
 			_ => false,
 		}
@@ -639,16 +640,26 @@ impl pallet_safe_mode::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type RuntimeHoldReason = RuntimeHoldReason;
+	// balance transfers are still allowed
 	type WhitelistedCalls = SafeModeWhitelistedCalls;
+	// Safe mode will last 4 hours
 	type EnterDuration = EnterDuration;
+	// Safe mode can be extended 2 hours
 	type ExtendDuration = ExtendDuration;
+	// 1 DOT required to enter into safe mode
 	type EnterDepositAmount = EnterDepositAmount;
+	// 0.5 DOT required to extend the safe mode
 	type ExtendDepositAmount = ExtendDepositAmount;
+	// only allow root origin to enter into safe mode
 	type ForceEnterOrigin = EnsureRootWithSuccess<AccountId, ConstU32<9>>;
+	// only allow root origin to extend safe mode
 	type ForceExtendOrigin = EnsureRootWithSuccess<AccountId, ConstU32<11>>;
+	// only allow root origin to exit from safe mode
 	type ForceExitOrigin = EnsureRoot<AccountId>;
+	// only allow root origin to release or slash a deposit
 	type ForceDepositOrigin = EnsureRoot<AccountId>;
 	type Notify = ();
+	// Deposits will remain reserved for 2 days after entering or extending the safe mode
 	type ReleaseDelay = ReleaseDelay;
 	type WeightInfo = pallet_safe_mode::weights::SubstrateWeight<Runtime>;
 }
@@ -668,8 +679,11 @@ impl Contains<RuntimeCallNameOf<Runtime>> for TxPauseWhitelistedCalls {
 impl pallet_tx_pause::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
+	// Only root origin can pause transactions
 	type PauseOrigin = EnsureRoot<AccountId>;
+	// Only root origin can unpause transactions
 	type UnpauseOrigin = EnsureRoot<AccountId>;
+	// Balance transfers will not be paused
 	type WhitelistedCalls = TxPauseWhitelistedCalls;
 	type MaxNameLen = ConstU32<256>;
 	type WeightInfo = pallet_tx_pause::weights::SubstrateWeight<Runtime>;
