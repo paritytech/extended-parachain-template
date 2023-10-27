@@ -30,12 +30,7 @@ pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
 pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
 
-pub const UNITS: Balance = 1_000_000_000_000;
-pub const QUID: Balance = UNITS / 30;
-pub const CENTS: Balance = QUID / 100;
-pub const GRAND: Balance = QUID * 1_000;
-pub const MILLICENTS: Balance = CENTS / 1_000;
-pub const DOLLARS: Balance = CENTS / 1_000;
+pub const UNITS: Balance = 10_000_000_000;
 
 /// We assume that ~5% of the block weight is consumed by `on_initialize` handlers. This is
 /// used to limit the maximal weight of a single extrinsic.

@@ -41,8 +41,8 @@ use frame_system::{
 };
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use runtime_common::{
-	AVERAGE_ON_INITIALIZE_RATIO, DAYS, DOLLARS, HOURS, MAXIMUM_BLOCK_WEIGHT, MILLISECS_PER_BLOCK,
-	MINUTES, NORMAL_DISPATCH_RATIO, SLOT_DURATION,
+	AVERAGE_ON_INITIALIZE_RATIO, DAYS, HOURS, MAXIMUM_BLOCK_WEIGHT, MILLISECS_PER_BLOCK, MINUTES,
+	NORMAL_DISPATCH_RATIO, SLOT_DURATION, UNITS,
 };
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 pub use sp_runtime::{MultiAddress, Perbill, Permill};
@@ -627,9 +627,9 @@ impl Contains<RuntimeCall> for SafeModeWhitelistedCalls {
 
 parameter_types! {
 	pub const EnterDuration: BlockNumber = 4 * HOURS;
-	pub const EnterDepositAmount: Balance = 2_000_000 * DOLLARS;
+	pub const EnterDepositAmount: Balance = UNITS;
 	pub const ExtendDuration: BlockNumber = 2 * HOURS;
-	pub const ExtendDepositAmount: Balance = 1_000_000 * DOLLARS;
+	pub const ExtendDepositAmount: Balance = UNITS / 2;
 	pub const ReleaseDelay: u32 = 2 * DAYS;
 }
 
