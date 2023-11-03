@@ -11,6 +11,7 @@ pub mod xcm_config;
 pub use fee::WeightToFee;
 
 use cumulus_pallet_parachain_system::RelayNumberStrictlyIncreases;
+use pallet_tx_pause::RuntimeCallNameOf;
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, ConstBool, OpaqueMetadata};
 use sp_runtime::{
@@ -29,13 +30,15 @@ use frame_support::{
 	construct_runtime,
 	dispatch::DispatchClass,
 	parameter_types,
-	traits::{AsEnsureOriginWithArg, ConstU32, ConstU64, ConstU8, EitherOfDiverse, Everything},
+	traits::{
+		AsEnsureOriginWithArg, ConstU32, ConstU64, ConstU8, Contains, EitherOfDiverse, Everything,
+	},
 	weights::{ConstantMultiplier, Weight},
 	PalletId,
 };
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
-	EnsureRoot, EnsureSigned,
+	EnsureRoot, EnsureRootWithSuccess, EnsureSigned,
 };
 use pallet_xcm::{EnsureXcm, IsVoiceOfBody};
 pub use runtime_common::{
@@ -348,7 +351,7 @@ impl pallet_balances::Config for Runtime {
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type ReserveIdentifier = [u8; 8];
-	type RuntimeHoldReason = ();
+	type RuntimeHoldReason = RuntimeHoldReason;
 	type FreezeIdentifier = ();
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ConstU32<50>;
@@ -611,6 +614,81 @@ impl pallet_collator_selection::Config for Runtime {
 	type WeightInfo = ();
 }
 
+pub struct SafeModeWhitelistedCalls;
+impl Contains<RuntimeCall> for SafeModeWhitelistedCalls {
+	fn contains(call: &RuntimeCall) -> bool {
+		match call {
+			RuntimeCall::System(_)
+			| RuntimeCall::SafeMode(_)
+			| RuntimeCall::TxPause(_)
+			// balance transfers are allowed
+			| RuntimeCall::Balances(_) => true,
+			_ => false,
+		}
+	}
+}
+
+parameter_types! {
+	pub const EnterDuration: BlockNumber = 4 * HOURS;
+	pub const EnterDepositAmount: Option<Balance> = None;
+	pub const ExtendDuration: BlockNumber = 2 * HOURS;
+	pub const ExtendDepositAmount: Option<Balance> = None;
+	pub const ReleaseDelay: u32 = 2 * DAYS;
+}
+
+impl pallet_safe_mode::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type RuntimeHoldReason = RuntimeHoldReason;
+	// balance transfers are still allowed
+	type WhitelistedCalls = SafeModeWhitelistedCalls;
+	// Safe mode will last 4 hours
+	type EnterDuration = EnterDuration;
+	// Safe mode can be extended 2 hours
+	type ExtendDuration = ExtendDuration;
+	// 1 DOT required to enter into safe mode
+	type EnterDepositAmount = EnterDepositAmount;
+	// 0.5 DOT required to extend the safe mode
+	type ExtendDepositAmount = ExtendDepositAmount;
+	// only allow root origin to enter into safe mode
+	type ForceEnterOrigin = EnsureRootWithSuccess<AccountId, ConstU32<9>>;
+	// only allow root origin to extend safe mode
+	type ForceExtendOrigin = EnsureRootWithSuccess<AccountId, ConstU32<11>>;
+	// only allow root origin to exit from safe mode
+	type ForceExitOrigin = EnsureRoot<AccountId>;
+	// only allow root origin to release or slash a deposit
+	type ForceDepositOrigin = EnsureRoot<AccountId>;
+	type Notify = ();
+	// Deposits will remain reserved for 2 days after entering or extending the safe mode
+	type ReleaseDelay = ReleaseDelay;
+	type WeightInfo = pallet_safe_mode::weights::SubstrateWeight<Runtime>;
+}
+
+/// Calls that cannot be paused by the tx-pause pallet.
+pub struct TxPauseWhitelistedCalls;
+/// Whitelist `Balances::transfer_keep_alive`, all others are pauseable.
+impl Contains<RuntimeCallNameOf<Runtime>> for TxPauseWhitelistedCalls {
+	fn contains(full_name: &RuntimeCallNameOf<Runtime>) -> bool {
+		match (full_name.0.as_slice(), full_name.1.as_slice()) {
+			(b"Balances", b"transfer_keep_alive") => true,
+			_ => false,
+		}
+	}
+}
+
+impl pallet_tx_pause::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	// Only root origin can pause transactions
+	type PauseOrigin = EnsureRoot<AccountId>;
+	// Only root origin can unpause transactions
+	type UnpauseOrigin = EnsureRoot<AccountId>;
+	// Balance transfers will not be paused
+	type WhitelistedCalls = TxPauseWhitelistedCalls;
+	type MaxNameLen = ConstU32<256>;
+	type WeightInfo = pallet_tx_pause::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub struct Runtime {
@@ -625,6 +703,8 @@ construct_runtime!(
 		Multisig: pallet_multisig = 5,
 		Preimage: pallet_preimage = 6,
 		Scheduler: pallet_scheduler = 7,
+		SafeMode:  pallet_safe_mode = 8,
+		TxPause: pallet_tx_pause = 9,
 
 		// Monetary stuff.
 		Balances: pallet_balances = 10,
@@ -663,6 +743,8 @@ mod benches {
 		[pallet_collator_selection, CollatorSelection]
 		[pallet_multisig, Multisig]
 		[pallet_preimage, Preimage]
+		[pallet_safe_mode, SafeMode]
+		[pallet_tx_pause, TxPause]
 		[cumulus_pallet_xcmp_queue, XcmpQueue]
 	);
 }

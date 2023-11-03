@@ -2523,12 +2523,14 @@ dependencies = [
  "pallet-motion",
  "pallet-multisig",
  "pallet-preimage",
+ "pallet-safe-mode",
  "pallet-scheduler",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-tx-pause",
  "pallet-utility",
  "pallet-xcm",
  "parity-scale-codec",
@@ -5329,12 +5331,14 @@ dependencies = [
  "pallet-motion",
  "pallet-multisig",
  "pallet-preimage",
+ "pallet-safe-mode",
  "pallet-scheduler",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-tx-pause",
  "pallet-utility",
  "pallet-xcm",
  "parity-scale-codec",
@@ -6815,6 +6819,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-safe-mode"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b9545fb651ef8a355bfc881e31fd95b041ceae87289f329f97f95eb0b82f88e"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-proxy",
+ "pallet-utility",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-arithmetic",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-scheduler"
 version = "24.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7084,6 +7107,24 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-tx-pause"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00a4a73de91c2a34c71aa0746ab3d954dfcb5c73d9c978eeaeb998c9e385068c"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-proxy",
+ "pallet-utility",
+ "parity-scale-codec",
+ "scale-info",
  "sp-runtime",
  "sp-std",
 ]
