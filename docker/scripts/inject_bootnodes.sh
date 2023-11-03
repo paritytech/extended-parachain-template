@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# this script runs the watr-node after fetching
+# this script runs the parachain-template-node after fetching
 # appropriate bootnode IDs
 #
 # this is _not_ a general-purpose script; it is closely tied to the
@@ -8,7 +8,7 @@
 
 set -e -o pipefail
 
-ctpc="/usr/bin/watr-node"
+ctpc="/usr/bin/parachain-template-node"
 
 if [ ! -x "$ctpc" ]; then
     echo "FATAL: $ctpc does not exist or is not executable"
