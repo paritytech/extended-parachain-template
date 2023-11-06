@@ -31,7 +31,7 @@ build_polkadot(){
       git checkout release-polkadot-$POLKADOT_V
       echo "building polkadot executable..."
       cargo build --release --features fast-runtime
-      cp ${POLKADOT_FILES[@]/#/target/release/} $CWD/bin
+      cp "${POLKADOT_FILES[@]/#/target/release/}" "$CWD/bin"
     popd
   popd
 }
