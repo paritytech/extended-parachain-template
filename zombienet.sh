@@ -21,11 +21,13 @@ build_polkadot(){
   mkdir -p bin
   pushd /tmp
     git clone https://github.com/paritytech/polkadot-sdk.git
-    pushd polkadot
-      git checkout $POLKADOT_V
+    pushd polkadot-sdk
+      git checkout release-polkadot-$POLKADOT_V
       echo "building polkadot executable..."
       cargo build --release --features fast-runtime
-      cp target/release/polkadot $CWD/bin
+      cp target/release/polkadot "$CWD/bin"
+      cp target/release/polkadot-execute-worker "$CWD/bin"
+      cp target/release/polkadot-prepare-worker "$CWD/bin"
     popd
   popd
 }
@@ -36,7 +38,7 @@ zombienet_init() {
     curl -LO https://github.com/paritytech/zombienet/releases/download/$ZOMBIENET_V/$ZOMBIENET_BIN
     chmod +x $ZOMBIENET_BIN
   fi
-  if [ ! -f bin/polkadot ]; then
+  if [ ! -f bin/polkadot ] || [ ! -f bin/polkadot-execute-worker ] || [ ! -f bin/polkadot-prepare-worker ]; then
     build_polkadot
   fi
 }

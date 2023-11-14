@@ -1,5 +1,8 @@
 # Extended Parachain Template
 
+[![Check Build](https://github.com/paritytech/extended-parachain-template/actions/workflows/build.yml/badge.svg)](https://github.com/paritytech/extended-parachain-template/actions/workflows/build.yml)
+
+
 The **Extended Parachain Template** is a ready-to-use parachain template, pre-configured with the [Assets](https://paritytech.github.io/substrate/master/pallet_assets/index.html) pallet, a simple Governance system ([Collective](https://paritytech.github.io/substrate/master/pallet_collective/index.html) & [Motion](https://github.com/paritytech/extended-parachain-template/tree/main/pallets/motion) pallets), and other useful base features.
 
 This is a solid starting point for most Parachain projects as it is a more feature-rich alternative to the base [Substrate Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template) (which it is derived from).

@@ -288,6 +288,8 @@ pub mod devnet {
 				..Default::default()
 			},
 			transaction_payment: Default::default(),
+			safe_mode: Default::default(),
+			tx_pause: Default::default(),
 		}
 	}
 }
@@ -511,6 +513,8 @@ pub mod mainnet {
 				..Default::default()
 			},
 			transaction_payment: Default::default(),
+			safe_mode: Default::default(),
+			tx_pause: Default::default(),
 		}
 	}
 }

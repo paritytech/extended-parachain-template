@@ -1,0 +1,41 @@
+name: Publish Docker image
+
+on:
+  workflow_dispatch:
+    inputs:
+      docker_image:
+        description: The docker image
+        required: true
+      environment:
+        description: Runtime. Either devnet, mainnet or rococo
+        required: false
+        default: devnet
+
+jobs:
+  push_to_registry:
+    name: Push Docker image to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@96383f45573cb7f253c731d3b3ab81c87ef81934 # v5.0.0
+        with:
+          images: ${{ github.event.inputs.docker_image }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@0565240e2d4ab88bba5387d719585280857ece09 #v5.0.0
+        with:
+          file: docker/Dockerfile
+          build-args: environment=${{ github.event.inputs.environment }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
