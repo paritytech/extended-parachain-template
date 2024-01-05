@@ -209,7 +209,7 @@ pub mod devnet {
 		let alice = get_from_seed::<sr25519::Public>("Alice");
 		let bob = get_from_seed::<sr25519::Public>("Bob");
 		serde_json::json!( {
-				"balances": BalancesConfig { balances : endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect::<Vec<_>>() },
+				"balances": BalancesConfig { balances : endowed_accounts.iter().cloned().map(|k| (k, 1u128 << 60)).collect::<Vec<_>>() },
 				// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
 				"assets": {
 					"assets": vec![
@@ -396,7 +396,7 @@ pub mod mainnet {
 						.cloned()
 						// Fund sudo key for sending transactions
 						.chain(std::iter::once(root_key.clone()))
-						.map(|k| (k, 1 << 60))
+						.map(|k| (k, 1u128 << 60))
 						.collect::<Vec<_>>(),
 				},
 				// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
