@@ -109,7 +109,8 @@ where
 		+ sp_api::ApiExt<Block>
 		+ sp_offchain::OffchainWorkerApi<Block>
 		+ sp_block_builder::BlockBuilder<Block>,
-	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sc_client_api::StateBackend<BlakeTwo256>,
+	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>:
+		sc_client_api::StateBackend<BlakeTwo256>,
 	Executor: NativeExecutionDispatch + 'static,
 	BIQ: FnOnce(
 		Arc<ParachainClient<RuntimeApi, Executor>>,
@@ -217,7 +218,8 @@ where
 		+ cumulus_primitives_core::CollectCollationInfo<Block>
 		+ pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
-	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>: sc_client_api::StateBackend<BlakeTwo256>,
+	sc_client_api::StateBackendFor<TFullBackend<Block>, Block>:
+		sc_client_api::StateBackend<BlakeTwo256>,
 	Executor: NativeExecutionDispatch + 'static,
 
 	BIQ: FnOnce(

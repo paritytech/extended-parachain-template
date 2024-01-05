@@ -33,9 +33,7 @@ use frame_support::{
 	construct_runtime, derive_impl,
 	dispatch::DispatchClass,
 	parameter_types,
-	traits::{
-		AsEnsureOriginWithArg, ConstU32, ConstU64, ConstU8, Contains, EitherOfDiverse,
-	},
+	traits::{AsEnsureOriginWithArg, ConstU32, ConstU64, ConstU8, Contains, EitherOfDiverse},
 	weights::{ConstantMultiplier, Weight},
 	PalletId,
 };
@@ -67,7 +65,6 @@ use weights::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight};
 // XCM Imports
 use runtime_common::Nonce;
 use xcm::latest::prelude::BodyId;
-
 
 /// The address format for describing accounts.
 pub type Address = MultiAddress<AccountId, ()>;
