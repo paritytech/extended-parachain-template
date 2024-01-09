@@ -421,7 +421,7 @@ pub mod mainnet {
 				},
 				"collatorSelection": {
 					"invulnerables": invulnerables.iter().cloned().map(|(acc, _)| acc).collect::<Vec<_>>(),
-					"candidacy_bond": EXISTENTIAL_DEPOSIT * 16,
+					"candidacyBond": EXISTENTIAL_DEPOSIT * 16,
 				},
 				"session": {
 					"keys": invulnerables
