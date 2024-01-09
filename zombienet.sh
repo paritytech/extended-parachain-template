@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ZOMBIENET_V=v1.3.69
+ZOMBIENET_V=v1.3.89
 POLKADOT_V=v1.5.0
 
 case "$(uname -s)" in
