@@ -1,5 +1,5 @@
 use cumulus_primitives_core::ParaId;
-use runtime_common::{AccountId, AuraId, Signature};
+use runtime_common::{AccountId, AuraId, Balance, Signature};
 use sc_chain_spec::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -104,53 +104,47 @@ pub mod devnet {
 		properties.insert("tokenDecimals".into(), 12.into());
 		properties.insert("ss58Format".into(), 42.into());
 
-		DevnetChainSpec::from_genesis(
-			// Name
-			"Development",
-			// ID
-			"dev",
-			ChainType::Development,
-			move || {
-				testnet_genesis(
-					// initial collators.
-					vec![
-						(
-							get_account_id_from_seed::<sr25519::Public>("Alice"),
-							get_collator_keys_from_seed("Alice"),
-						),
-						(
-							get_account_id_from_seed::<sr25519::Public>("Bob"),
-							get_collator_keys_from_seed("Bob"),
-						),
-					],
-					vec![
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						get_account_id_from_seed::<sr25519::Public>("Charlie"),
-						get_account_id_from_seed::<sr25519::Public>("Dave"),
-						get_account_id_from_seed::<sr25519::Public>("Eve"),
-						get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-						get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-					],
-					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-					PARA_ID.into(),
-				)
-			},
-			Vec::new(),
-			None,
-			None,
-			None,
-			None,
+		DevnetChainSpec::builder(
+			devnet_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
 			Extensions {
-				relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+				relay_chain: "rococo-local".into(),
+				// You MUST set this to the correct network!
 				para_id: PARA_ID,
 			},
 		)
+		.with_name("Development")
+		.with_id("dev")
+		.with_chain_type(ChainType::Development)
+		.with_genesis_config_patch(testnet_genesis(
+			vec![
+				(
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_collator_keys_from_seed("Alice"),
+				),
+				(
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_collator_keys_from_seed("Bob"),
+				),
+			],
+			vec![
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+				get_account_id_from_seed::<sr25519::Public>("Dave"),
+				get_account_id_from_seed::<sr25519::Public>("Eve"),
+				get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+			],
+			Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+			PARA_ID.into(),
+		))
+		.with_properties(properties)
+		.build()
 	}
 
 	pub fn local_testnet_config() -> DevnetChainSpec {
@@ -160,59 +154,49 @@ pub mod devnet {
 		properties.insert("tokenDecimals".into(), 12.into());
 		properties.insert("ss58Format".into(), 42.into());
 
-		DevnetChainSpec::from_genesis(
-			// Name
-			"Development Local Testnet",
-			// ID
-			"dev_local_testnet",
-			ChainType::Local,
-			move || {
-				testnet_genesis(
-					// initial collators.
-					vec![
-						(
-							get_account_id_from_seed::<sr25519::Public>("Alice"),
-							get_collator_keys_from_seed("Alice"),
-						),
-						(
-							get_account_id_from_seed::<sr25519::Public>("Bob"),
-							get_collator_keys_from_seed("Bob"),
-						),
-					],
-					vec![
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						get_account_id_from_seed::<sr25519::Public>("Charlie"),
-						get_account_id_from_seed::<sr25519::Public>("Dave"),
-						get_account_id_from_seed::<sr25519::Public>("Eve"),
-						get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-						get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-					],
-					Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
-					PARA_ID.into(),
-				)
-			},
-			// Bootnodes
-			Vec::new(),
-			// Telemetry
-			None,
-			// Protocol ID
-			Some("devnet-local"),
-			// Fork ID
-			None,
-			// Properties
-			Some(properties),
-			// Extensions
+		DevnetChainSpec::builder(
+			devnet_runtime::WASM_BINARY.expect("WASM binary was not built, please build it!"),
 			Extensions {
-				relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
+				relay_chain: "rococo-local".into(),
+				// You MUST set this to the correct network!
 				para_id: PARA_ID,
 			},
 		)
+		.with_name("Development")
+		.with_id("dev")
+		.with_chain_type(ChainType::Development)
+		.with_genesis_config_patch(testnet_genesis(
+			// initial collators.
+			vec![
+				(
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_collator_keys_from_seed("Alice"),
+				),
+				(
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_collator_keys_from_seed("Bob"),
+				),
+			],
+			vec![
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+				get_account_id_from_seed::<sr25519::Public>("Dave"),
+				get_account_id_from_seed::<sr25519::Public>("Eve"),
+				get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+			],
+			Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+			PARA_ID.into(),
+		))
+		.with_protocol_id("template-local")
+		.with_properties(properties)
+		.build()
 	}
 
 	fn testnet_genesis(
@@ -220,77 +204,53 @@ pub mod devnet {
 		endowed_accounts: Vec<AccountId>,
 		root_key: Option<AccountId>,
 		id: ParaId,
-	) -> devnet_runtime::RuntimeGenesisConfig {
-		use devnet_runtime::EXISTENTIAL_DEPOSIT;
+	) -> serde_json::Value {
+		use devnet_runtime::{BalancesConfig, EXISTENTIAL_DEPOSIT};
 		let alice = get_from_seed::<sr25519::Public>("Alice");
 		let bob = get_from_seed::<sr25519::Public>("Bob");
-
-		devnet_runtime::RuntimeGenesisConfig {
-			system: devnet_runtime::SystemConfig {
-				code: devnet_runtime::WASM_BINARY
-					.expect("WASM binary was not build, please build it!")
-					.to_vec(),
-				..Default::default()
-			},
-			balances: devnet_runtime::BalancesConfig {
-				balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
-			},
-			// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
-			assets: devnet_runtime::AssetsConfig {
-				assets: vec![
-					(1, alice.into(), true, 100_000_000_000),
-					(2, bob.into(), true, 100_000_000_000),
-				],
-				// Genesis metadata: Vec<(id, name, symbol, decimals)>
-				metadata: vec![
-					(1, "asset-1".into(), "ALT1".into(), 10),
-					(2, "asset-2".into(), "ALT2".into(), 10),
-				],
-				// Genesis accounts: Vec<(id, account_id, balance)>
-				accounts: vec![
-					(1, alice.into(), 500_000_000_000),
-					(2, bob.into(), 500_000_000_000),
-				],
-			},
-			parachain_info: devnet_runtime::ParachainInfoConfig {
-				parachain_id: id,
-				..Default::default()
-			},
-			collator_selection: devnet_runtime::CollatorSelectionConfig {
-				invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-				candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
-				..Default::default()
-			},
-			session: devnet_runtime::SessionConfig {
-				keys: invulnerables
-					.into_iter()
-					.map(|(acc, aura)| {
-						(
-							acc.clone(),               // account id
-							acc,                       // validator id
-							devnet_session_keys(aura), // session keys
-						)
-					})
-					.collect(),
-			},
-			// no need to pass anything to aura, in fact it will panic if we do. Session will take care
-			// of this.
-			aura: Default::default(),
-			aura_ext: Default::default(),
-			sudo: devnet_runtime::SudoConfig { key: root_key },
-			council: devnet_runtime::CouncilConfig {
-				phantom: std::marker::PhantomData,
-				members: endowed_accounts.iter().take(4).cloned().collect(),
-			},
-			parachain_system: Default::default(),
-			polkadot_xcm: devnet_runtime::PolkadotXcmConfig {
-				safe_xcm_version: Some(SAFE_XCM_VERSION),
-				..Default::default()
-			},
-			transaction_payment: Default::default(),
-			safe_mode: Default::default(),
-			tx_pause: Default::default(),
-		}
+		serde_json::json!( {
+				"balances": BalancesConfig { balances : endowed_accounts.iter().cloned().map(|k| (k, 1u128 << 60)).collect::<Vec<_>>() },
+				// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
+				"assets": {
+					"assets": vec![
+						(1, Into::<AccountId>::into(alice), true, 100_000_000_000 as Balance),
+						(2, bob.into(), true, 100_000_000_000),
+					],
+					// Genesis metadata: Vec<(id, name, symbol, decimals)>
+					"metadata": vec![
+						(1, "asset-1".as_bytes(), "ALT1".as_bytes(), 10),
+						(2, "asset-2".as_bytes(), "ALT2".as_bytes(), 10),
+					],
+					// Genesis accounts: Vec<(id, account_id, balance)>
+					"accounts": vec![
+						(1, Into::<AccountId>::into(alice), 500_000_000_000 as Balance),
+						(2, bob.into(), 500_000_000_000),
+					],
+				},
+				"parachainInfo": { "parachainId": id },
+				"collatorSelection": {
+					"invulnerables": invulnerables.iter().cloned().map(|(acc, _)| acc).collect::<Vec<_>>(),
+					"candidacyBond": EXISTENTIAL_DEPOSIT * 16,
+				},
+				"session": {
+					"keys": invulnerables
+						.into_iter()
+						.map(|(acc, aura)| {
+							(
+								acc.clone(),               // account id
+								acc,                       // validator id
+								devnet_session_keys(aura), // session keys
+							)
+						})
+						.collect::<Vec<_>>(),
+				},
+				"sudo" : { "key" : root_key },
+				"council": {
+					"members": endowed_accounts.iter().take(4).cloned().collect::<Vec<_>>(),
+				},
+				"polkadotXcm": { "safeXcmVersion": Some(SAFE_XCM_VERSION) },
+			}
+		)
 	}
 }
 
@@ -303,63 +263,59 @@ pub mod mainnet {
 		properties.insert("tokenDecimals".into(), 12.into());
 		properties.insert("ss58Format".into(), 42.into());
 
-		MainChainSpec::from_genesis(
-			// Name
-			"Mainnet Development",
-			// ID
-			"main_dev",
-			ChainType::Development,
-			move || {
-				mainnet_genesis(
-					// initial collators.
-					vec![
-						(
-							get_account_id_from_seed::<sr25519::Public>("Alice"),
-							get_collator_keys_from_seed("Alice"),
-						),
-						(
-							get_account_id_from_seed::<sr25519::Public>("Bob"),
-							get_collator_keys_from_seed("Bob"),
-						),
-					],
-					vec![
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						get_account_id_from_seed::<sr25519::Public>("Charlie"),
-						get_account_id_from_seed::<sr25519::Public>("Dave"),
-						get_account_id_from_seed::<sr25519::Public>("Eve"),
-						get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-						get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-					],
-					// Example multisig sudo key configuration:
-					// Configures 2/3 threshold multisig key
-					// Note: For using this multisig key as a sudo key, each individual signatory must possess funds
-					get_multisig_sudo_key(
-						vec![
-							get_account_id_from_seed::<sr25519::Public>("Charlie"),
-							get_account_id_from_seed::<sr25519::Public>("Dave"),
-							get_account_id_from_seed::<sr25519::Public>("Eve"),
-						],
-						2,
-					),
-					PARA_ID.into(),
-				)
-			},
-			Vec::new(),
-			None,
-			None,
-			None,
-			None,
+		MainChainSpec::builder(
+			mainnet_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
 			Extensions {
 				relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 				para_id: PARA_ID,
 			},
 		)
+		// Name
+		.with_name("Mainnet Development")
+		// ID
+		.with_id("main_dev")
+		.with_chain_type(ChainType::Custom("Mainnet Development".to_string()))
+		.with_genesis_config_patch(mainnet_genesis(
+			// initial collators.
+			vec![
+				(
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_collator_keys_from_seed("Alice"),
+				),
+				(
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_collator_keys_from_seed("Bob"),
+				),
+			],
+			vec![
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+				get_account_id_from_seed::<sr25519::Public>("Dave"),
+				get_account_id_from_seed::<sr25519::Public>("Eve"),
+				get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+			],
+			// Example multisig sudo key configuration:
+			// Configures 2/3 threshold multisig key
+			// Note: For using this multisig key as a sudo key, each individual signatory must possess funds
+			get_multisig_sudo_key(
+				vec![
+					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+					get_account_id_from_seed::<sr25519::Public>("Dave"),
+					get_account_id_from_seed::<sr25519::Public>("Eve"),
+				],
+				2,
+			),
+			PARA_ID.into(),
+		))
+		.with_properties(properties)
+		.build()
 	}
 
 	pub fn local_testnet_config() -> MainChainSpec {
@@ -369,69 +325,58 @@ pub mod mainnet {
 		properties.insert("tokenDecimals".into(), 12.into());
 		properties.insert("ss58Format".into(), 42.into());
 
-		MainChainSpec::from_genesis(
-			// Name
-			"Mainnet Local Testnet",
-			// ID
-			"main_local_testnet",
-			ChainType::Local,
-			move || {
-				mainnet_genesis(
-					// initial collators.
-					vec![
-						(
-							get_account_id_from_seed::<sr25519::Public>("Alice"),
-							get_collator_keys_from_seed("Alice"),
-						),
-						(
-							get_account_id_from_seed::<sr25519::Public>("Bob"),
-							get_collator_keys_from_seed("Bob"),
-						),
-					],
-					vec![
-						get_account_id_from_seed::<sr25519::Public>("Alice"),
-						get_account_id_from_seed::<sr25519::Public>("Bob"),
-						get_account_id_from_seed::<sr25519::Public>("Charlie"),
-						get_account_id_from_seed::<sr25519::Public>("Dave"),
-						get_account_id_from_seed::<sr25519::Public>("Eve"),
-						get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-						get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-						get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-					],
-					// Example multisig sudo key configuration:
-					// Configures 2/3 threshold multisig key
-					// Note: For using this multisig key as a sudo key, each individual signatory must possess funds
-					get_multisig_sudo_key(
-						vec![
-							get_account_id_from_seed::<sr25519::Public>("Charlie"),
-							get_account_id_from_seed::<sr25519::Public>("Dave"),
-							get_account_id_from_seed::<sr25519::Public>("Eve"),
-						],
-						2,
-					),
-					PARA_ID.into(),
-				)
-			},
-			// Bootnodes
-			Vec::new(),
-			// Telemetry
-			None,
-			// Protocol ID
-			Some("mainnet-local"),
-			// Fork ID
-			None,
-			// Properties
-			Some(properties),
-			// Extensions
+		MainChainSpec::builder(
+			mainnet_runtime::WASM_BINARY.expect("WASM binary was not build, please build it!"),
 			Extensions {
 				relay_chain: "rococo-local".into(), // You MUST set this to the correct network!
 				para_id: PARA_ID,
 			},
 		)
+		.with_name("Mainnet Local Testnet")
+		.with_id("main_local_testnet")
+		.with_chain_type(ChainType::Local)
+		.with_genesis_config_patch(mainnet_genesis(
+			// initial collators.
+			vec![
+				(
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_collator_keys_from_seed("Alice"),
+				),
+				(
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_collator_keys_from_seed("Bob"),
+				),
+			],
+			vec![
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+				get_account_id_from_seed::<sr25519::Public>("Dave"),
+				get_account_id_from_seed::<sr25519::Public>("Eve"),
+				get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+				get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+				get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+			],
+			// Example multisig sudo key configuration:
+			// Configures 2/3 threshold multisig key
+			// Note: For using this multisig key as a sudo key, each individual signatory must possess funds
+			get_multisig_sudo_key(
+				vec![
+					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+					get_account_id_from_seed::<sr25519::Public>("Dave"),
+					get_account_id_from_seed::<sr25519::Public>("Eve"),
+				],
+				2,
+			),
+			PARA_ID.into(),
+		))
+		.with_protocol_id("template-local")
+		.with_properties(properties)
+		.build()
 	}
 
 	fn mainnet_genesis(
@@ -439,82 +384,65 @@ pub mod mainnet {
 		endowed_accounts: Vec<AccountId>,
 		root_key: AccountId,
 		id: ParaId,
-	) -> mainnet_runtime::RuntimeGenesisConfig {
+	) -> serde_json::Value {
 		use mainnet_runtime::EXISTENTIAL_DEPOSIT;
 		let alice = get_from_seed::<sr25519::Public>("Alice");
 		let bob = get_from_seed::<sr25519::Public>("Bob");
 
-		mainnet_runtime::RuntimeGenesisConfig {
-			system: mainnet_runtime::SystemConfig {
-				code: mainnet_runtime::WASM_BINARY
-					.expect("WASM binary was not build, please build it!")
-					.to_vec(),
-				..Default::default()
-			},
-			balances: mainnet_runtime::BalancesConfig {
-				balances: endowed_accounts
-					.iter()
-					.cloned()
-					// Fund sudo key for sending transactions
-					.chain(std::iter::once(root_key.clone()))
-					.map(|k| (k, 1 << 60))
-					.collect(),
-			},
-			// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
-			assets: mainnet_runtime::AssetsConfig {
-				assets: vec![
-					(1, alice.into(), true, 100_000_000_000),
-					(2, bob.into(), true, 100_000_000_000),
-				],
-				// Genesis metadata: Vec<(id, name, symbol, decimals)>
-				metadata: vec![
-					(1, "asset-1".into(), "ALT1".into(), 10),
-					(2, "asset-2".into(), "ALT2".into(), 10),
-				],
-				// Genesis accounts: Vec<(id, account_id, balance)>
-				accounts: vec![
-					(1, alice.into(), 500_000_000_000),
-					(2, bob.into(), 500_000_000_000),
-				],
-			},
-			parachain_info: mainnet_runtime::ParachainInfoConfig {
-				parachain_id: id,
-				..Default::default()
-			},
-			collator_selection: mainnet_runtime::CollatorSelectionConfig {
-				invulnerables: invulnerables.iter().cloned().map(|(acc, _)| acc).collect(),
-				candidacy_bond: EXISTENTIAL_DEPOSIT * 16,
-				..Default::default()
-			},
-			session: mainnet_runtime::SessionConfig {
-				keys: invulnerables
-					.into_iter()
-					.map(|(acc, aura)| {
-						(
-							acc.clone(),                // account id
-							acc,                        // validator id
-							mainnet_session_keys(aura), // session keys
-						)
-					})
-					.collect(),
-			},
-			// no need to pass anything to aura, in fact it will panic if we do. Session will take care
-			// of this.
-			aura: Default::default(),
-			aura_ext: Default::default(),
-			sudo: mainnet_runtime::SudoConfig { key: Some(root_key) },
-			council: mainnet_runtime::CouncilConfig {
-				phantom: std::marker::PhantomData,
-				members: endowed_accounts.iter().take(4).cloned().collect(),
-			},
-			parachain_system: Default::default(),
-			polkadot_xcm: mainnet_runtime::PolkadotXcmConfig {
-				safe_xcm_version: Some(SAFE_XCM_VERSION),
-				..Default::default()
-			},
-			transaction_payment: Default::default(),
-			safe_mode: Default::default(),
-			tx_pause: Default::default(),
-		}
+		serde_json::json!({
+				"balances": {
+					"balances": endowed_accounts
+						.iter()
+						.cloned()
+						// Fund sudo key for sending transactions
+						.chain(std::iter::once(root_key.clone()))
+						.map(|k| (k, 1u128 << 60))
+						.collect::<Vec<_>>(),
+				},
+				// Configure two assets ALT1 & ALT2 with two owners, alice and bob respectively
+				"assets": {
+					"assets": vec![
+						(1, Into::<AccountId>::into(alice), true, 100_000_000_000 as Balance),
+						(2, bob.into(), true, 100_000_000_000),
+					],
+					// Genesis metadata: Vec<(id, name, symbol, decimals)>
+					"metadata": vec![
+						(1, "asset-1".as_bytes(), "ALT1".as_bytes(), 10),
+						(2, "asset-2".as_bytes(), "ALT2".as_bytes(), 10),
+					],
+					// Genesis accounts: Vec<(id, account_id, balance)>
+					"accounts": vec![
+						(1, Into::<AccountId>::into(alice), 500_000_000_000 as Balance),
+						(2, bob.into(), 500_000_000_000),
+					],
+				},
+				"parachainInfo": {
+					"parachainId": id,
+				},
+				"collatorSelection": {
+					"invulnerables": invulnerables.iter().cloned().map(|(acc, _)| acc).collect::<Vec<_>>(),
+					"candidacyBond": EXISTENTIAL_DEPOSIT * 16,
+				},
+				"session": {
+					"keys": invulnerables
+						.into_iter()
+						.map(|(acc, aura)| {
+							(
+								acc.clone(),                // account id
+								acc,                        // validator id
+								mainnet_session_keys(aura), // session keys
+							)
+						})
+						.collect::<Vec<_>>(),
+				},
+				"sudo": { "key": Some(root_key) },
+				"council": {
+					"members": endowed_accounts.iter().take(4).cloned().collect::<Vec<_>>(),
+				},
+				"polkadotXcm": {
+					"safeXcmVersion": Some(SAFE_XCM_VERSION),
+				},
+			}
+		)
 	}
 }

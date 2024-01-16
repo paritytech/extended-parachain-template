@@ -26,7 +26,7 @@ jobs:
           toolchain: stable
           target: wasm32-unknown-unknown
           override: true
-          components: rustfmt, clippy
+          components: rustfmt, clippy, rust-src
 
       - name: Install protoc
         run: |
