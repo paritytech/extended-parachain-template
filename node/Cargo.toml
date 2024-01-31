@@ -73,6 +73,7 @@ cumulus-client-consensus-aura = { workspace = true }
 cumulus-client-consensus-common = { workspace = true }
 cumulus-client-collator = { workspace = true }
 cumulus-client-service = { workspace = true }
+cumulus-primitives-aura = { workspace = true }
 cumulus-primitives-core = { workspace = true }
 cumulus-primitives-parachain-inherent = { workspace = true }
 cumulus-client-consensus-proposer = { workspace = true }
