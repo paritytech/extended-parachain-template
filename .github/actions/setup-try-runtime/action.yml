@@ -1,0 +1,39 @@
+# Install try-runtime
+name: Install try-runtime
+description: |
+  This action sets up the rust toolchain, installs the protoc compiler
+  dependency, rust-cache and try-runtime.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Free up space on runner
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      shell: bash
+
+    - name: Rust Setup
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        target: wasm32-unknown-unknown
+        override: true
+        components: rustfmt, clippy
+
+    - name: Install protoc
+      run: sudo apt-get install -y protobuf-compiler && protoc --version
+      shell: bash
+
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2.5.0
+      with:
+          cache-on-failure: true
+          cache-all-crates: true
+
+    - name: Install try-runtime
+      run: cargo install --git https://github.com/paritytech/try-runtime-cli --locked
+      shell: bash
