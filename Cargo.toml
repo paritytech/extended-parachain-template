@@ -113,6 +113,7 @@ cumulus-pallet-parachain-system = { version = "0.4.0", default-features = false 
 cumulus-pallet-session-benchmarking = { version = "6.0.0", default-features = false }
 cumulus-pallet-xcm = { version = "0.4.0", default-features = false }
 cumulus-pallet-xcmp-queue = { version = "0.4.0", default-features = false }
+cumulus-primitives-aura = { version = "0.4.0", default-features = false }
 cumulus-primitives-core = { version = "0.4.0", default-features = false }
 cumulus-primitives-parachain-inherent = { version = "0.4.0" }
 cumulus-primitives-timestamp = { version = "0.4.0", default-features = false }
