@@ -496,9 +496,7 @@ where
 		+ substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Nonce>,
 	Executor: NativeExecutionDispatch + 'static,
 {
-	use cumulus_client_consensus_aura::collators::lookahead::{
-		self as aura, Params as AuraParams,
-	};
+	use cumulus_client_consensus_aura::collators::lookahead::{self as aura, Params as AuraParams};
 
 	// NOTE: because we use Aura here explicitly, we can use `CollatorSybilResistance::Resistant`
 	// when starting the network.
