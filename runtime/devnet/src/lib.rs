@@ -454,6 +454,7 @@ type ConsensusHook = cumulus_pallet_aura_ext::FixedVelocityConsensusHook<
 	BLOCK_PROCESSING_VELOCITY,
 	UNINCLUDED_SEGMENT_CAPACITY,
 >;
+
 impl parachain_info::Config for Runtime {}
 
 impl cumulus_pallet_aura_ext::Config for Runtime {}
@@ -734,7 +735,7 @@ construct_runtime!(
 		Multisig: pallet_multisig = 5,
 		Preimage: pallet_preimage = 6,
 		Scheduler: pallet_scheduler = 7,
-		SafeMode:  pallet_safe_mode = 8,
+		SafeMode: pallet_safe_mode = 8,
 		TxPause: pallet_tx_pause = 9,
 
 		// Monetary stuff.
@@ -774,9 +775,10 @@ mod benches {
 		[pallet_collator_selection, CollatorSelection]
 		[pallet_multisig, Multisig]
 		[pallet_preimage, Preimage]
+		[cumulus_pallet_xcmp_queue, XcmpQueue]
+		[pallet_motion, Motion]
 		[pallet_safe_mode, SafeMode]
 		[pallet_tx_pause, TxPause]
-		[cumulus_pallet_xcmp_queue, XcmpQueue]
 	);
 }
 
