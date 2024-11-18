@@ -1,0 +1,30 @@
+# Test storage migration using try-runtime on PRs with label "migration-devnet"
+name: Test storage migration (devnet)
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+  push:
+    branches: [ main ]
+
+jobs:
+  try_runtime:
+    if: contains(github.event.pull_request.labels.*.name, 'migration-devnet')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup try-runtime
+        uses: ./.github/actions/setup-try-runtime
+
+      # a live RPC node is required for the below work
+      - run: |
+          echo "Found label "migration-devnet". Running tests"
+          echo "---------- Running try-runtime for devnet extended-parachain-template ----------"
+          cargo build -p parachain-template-node --locked --release --no-default-features --features try-runtime && \
+          try-runtime --runtime ./target/release/wbuild/devnet-runtime/target/wasm32-unknown-unknown/release/devnet_runtime.wasm \
+              on-runtime-upgrade live --uri wss://try-runtime-rpc-node.parity.io:443
+        env:
+          RUST_LOG: remote-ext=debug,runtime=debug
+
